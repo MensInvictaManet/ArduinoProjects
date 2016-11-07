@@ -1,4 +1,4 @@
-gr#include <FastLED.h>
+#include <FastLED.h>
 
 #define LED_DATA_PIN   			2   			//  The WS2801 string data pin
 #define LED_CLOCK_PIN			4				//  The WS2801 string clock pin
@@ -9,6 +9,8 @@ gr#include <FastLED.h>
 #define MAX_LEDS        		76 	 		//  The number of LEDs on the full strip
 #define NUM_LEDS_VIRTUAL		MAX_LEDS + 10  	//  The number of LEDs to virtually travel. AKA the loop will continue until the position passes this number
 #define BRIGHTNESS      		60  			//  The number (0 to 200) for the brightness setting)
+
+#define GHOST_CART				true
 
 int DELAY_TIME = 25;
 unsigned long buttonTimer = 0;
@@ -31,23 +33,23 @@ int LoopedLEDIndex(int index)
 {
 	index = index % MAX_LEDS;
 	while (index < 0) index = (MAX_LEDS + index) % MAX_LEDS;
+	return index;
 }
 
 struct Color
 {
 public:
-	Color(byte r, byte g, byte b) : 
+	Color(int r, int g, int b) : 
 		R(r),
 		G(g),
 		B(b)
 	{}
 
-	byte R;
-	byte G;
-	byte B;
+	int R;
+	int G;
+	int B;
 	
 	inline bool isZero()		const {	return (R == 0 && G == 0 && B == 0);	}
-	inline byte getValue()		const {	return R + G + B;	}
 };
 
 enum LightGroupNames 
@@ -185,6 +187,7 @@ void RainbowFlow2(int speed = 1, bool berzerk = false)
     }
     
     if (!berzerk) rainbowPosition += speed;
+    delay(50);
 	FastLED.show();
 }
 
@@ -238,9 +241,11 @@ void GlowFlow()
 		do
 		{
 			newColorIndex = 1 + random(COMMON_COLOR_COUNT - 1);
-			colorDelta.R = pgm_read_byte_near(colors + (newColorIndex * 3) + 0) - colorCurrent.R;
-			colorDelta.G = pgm_read_byte_near(colors + (newColorIndex * 3) + 1) - colorCurrent.G;
-			colorDelta.B = pgm_read_byte_near(colors + (newColorIndex * 3) + 2) - colorCurrent.B;
+			
+			colorDelta.R = int(pgm_read_byte_near(colors[newColorIndex] + 0)) - colorCurrent.R;
+			colorDelta.G = int(pgm_read_byte_near(colors[newColorIndex] + 1)) - colorCurrent.G;
+			colorDelta.B = int(pgm_read_byte_near(colors[newColorIndex] + 2)) - colorCurrent.B;
+			
 		} while (colorDelta.isZero());
 		
 		nextChangeTime = millis() + GLOW_FLOW_COLOR_TIME;
@@ -301,7 +306,7 @@ void FireworksSetup()
 	for (int i = 0; i < MAX_LEDS; ++i)
 	{
 		int colorIndex = 1 + random(COMMON_COLOR_COUNT - 1);
-		leds[i] = CRGB(pgm_read_byte_near(colors[colorIndex] + 0), pgm_read_byte_near(colors[colorIndex] + 1), pgm_read_byte_near(colors[colorIndex] + 2));
+		leds[i] = CRGB(int(pgm_read_byte_near(colors[colorIndex] + 0)), int(pgm_read_byte_near(colors[colorIndex] + 1)), int(pgm_read_byte_near(colors[colorIndex] + 2)));
 	}
 	FastLED.show();
 }
@@ -317,7 +322,7 @@ void Fireworks()
 	{
 		int position = random(MAX_LEDS);
 		int colorIndex = 1 + random(COMMON_COLOR_COUNT - 1);
-		for (int i = 0; i < FIREWORK_SIZE; ++i) leds[LoopedLEDIndex(position + i)] = CRGB(pgm_read_byte_near(colors[colorIndex] + 0), pgm_read_byte_near(colors[colorIndex] + 1), pgm_read_byte_near(colors[colorIndex] + 2));
+		for (int i = 0; i < FIREWORK_SIZE; ++i) leds[LoopedLEDIndex(position + i)] = CRGB(int(pgm_read_byte_near(colors[colorIndex] + 0)), int(pgm_read_byte_near(colors[colorIndex] + 1)), int(pgm_read_byte_near(colors[colorIndex] + 2)));
 		lastFireworkTime = currentTime;
 	}
 	
@@ -331,7 +336,8 @@ void setup()
 	pinMode(BUTTON_PIN, INPUT_PULLUP); // connect internal pull-up
 	
 	//  Setup the LED strip and color all LEDs black
-	FastLED.addLeds<WS2801, LED_DATA_PIN, LED_CLOCK_PIN, RGB>(leds, MAX_LEDS).setCorrection( TypicalLEDStrip );
+	if (GHOST_CART)	FastLED.addLeds<WS2801, LED_DATA_PIN, LED_CLOCK_PIN, RGB>(leds, MAX_LEDS).setCorrection( TypicalLEDStrip );
+	else 			FastLED.addLeds<WS2811, LED_DATA_PIN, GRB>(leds, MAX_LEDS).setCorrection( TypicalLEDStrip );
 	FastLED.setBrightness(BRIGHTNESS);
 	ClearStrip();
 	FastLED.show();
@@ -382,4 +388,3 @@ void loop()
 		case 9:		Fireworks();				break;
 	}
 }
-
