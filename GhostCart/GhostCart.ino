@@ -1,30 +1,58 @@
 #include <FastLED.h>
 
-#define LED_DATA_PIN   			2   			//  The WS2801 string data pin
-#define LED_CLOCK_PIN			4				//  The WS2801 string clock pin
-#define POTENTIOMETER_PIN		A0				//  The data pin to the potentiometer
-#define BUTTON_PIN				10				//  The pin that the button is connected to
+#define LED_DATA_PIN   			    2   			//  The WS2801 string data pin
+#define LED_CLOCK_PIN			      4				//  The WS2801 string clock pin
+#define POTENTIOMETER_PIN		    A0				//  The data pin to the potentiometer
+#define BUTTON_PIN				      10				//  The pin that the button is connected to
 
-#define NUM_LEDS        		76  			//  The number of LEDs we want to alter
-#define MAX_LEDS        		76 	 		//  The number of LEDs on the full strip
-#define NUM_LEDS_VIRTUAL		MAX_LEDS + 10  	//  The number of LEDs to virtually travel. AKA the loop will continue until the position passes this number
-#define BRIGHTNESS      		60  			//  The number (0 to 200) for the brightness setting)
+#define NUM_LEDS        		    76  			//  The number of LEDs we want to alter
+#define MAX_LEDS        		    76 	 		//  The number of LEDs on the full strip
+#define NUM_LEDS_VIRTUAL		    MAX_LEDS + 10  	//  The number of LEDs to virtually travel. AKA the loop will continue until the position passes this number
+#define BRIGHTNESS      		    60  			//  The number (0 to 200) for the brightness setting)
 
-#define GHOST_CART				true
+#define GHOST_CART				      true
 
 int DELAY_TIME = 25;
 unsigned long buttonTimer = 0;
 
 //  Generic values
-#define BUTTON_DELAY			400
+#define BUTTON_DELAY			      400
 
 //  GlowFlow() values
-#define GLOW_FLOW_DELAY			15
-#define GLOW_FLOW_COLOR_TIME	3000
+#define GLOW_FLOW_DELAY         15
+#define GLOW_FLOW_COLOR_TIME	  3000
+
+//  MsPacman() values
+#define RED_TO_WHITE_RATIO      6
+#define MSPACMAN_SLOWDOWN       3
+
+//  VegasMarquee() values
+#define BLANK_TO_RED_RATIO      1
+#define MARQUEE_SLOWDOWN        5
 
 //  Fireworks() values
-#define FIREWORK_DELAY			500
-#define FIREWORK_SIZE			6
+#define FIREWORK_DELAY			    500
+#define FIREWORK_SIZE			      6
+
+//  Fireballs() values
+#define FIREBALL_COUNT          4
+#define FIREBALL_DELAY          60
+#define FIREBALL_FOLLOWERS      4
+#define FIREBALL_COLOR_DELAY    5000
+
+//  Cylon() values
+#define CYLON_BAR_LENGTH        4
+#define CYLON_BAR_DELAY         25
+#define CYLON_COLOR_DELAY       5000
+#define CYLON_MAX_POSITION      (NUM_LEDS - (CYLON_BAR_LENGTH - 1))
+#define CYLON_MAX_DISTANCE      (NUM_LEDS - (CYLON_BAR_LENGTH - 1)) * 2
+
+//  NewKITT() values
+#define KITT_BAR_LENGTH         8
+#define KITT_BAR_DELAY          25
+#define KITT_COLOR_DELAY        5000
+#define KITT_MAX_POSITION       (NUM_LEDS - KITT_BAR_LENGTH)
+
 
 CRGB leds[MAX_LEDS];
 int position = 0;
@@ -149,9 +177,11 @@ inline bool IsPositionOnStrip(int position)
 //////////////////////////////
 void Pacman()
 {
+  //  Clear the entire strip
+  ClearStrip();
+  
 	static int pacmanPosition = 0;
-	
-	ClearStrip();
+  
 	int P1 = ((pacmanPosition >= NUM_LEDS_VIRTUAL) ? 0 : pacmanPosition);
 	int P2 = (((P1 - 3) < 0) ? (NUM_LEDS_VIRTUAL + P1 - 3) : (P1 - 3));
 	int P3 = (((P1 - 5) < 0) ? (NUM_LEDS_VIRTUAL + P1 - 5) : (P1 - 5));
@@ -254,49 +284,49 @@ void GlowFlow()
 
 void GroupTest()
 {
+  //  Clear the entire strip
+  ClearStrip();
+  
 	LightGroupNames group = LightGroupNames((millis() / 250) % LIGHT_GROUP_COUNT);
 	
-	ClearStrip();
 	SetGroupColor(group, CRGB::Red);
 	FastLED.show();
 }
 
 void MsPacmanRedWhite()
 {
+  //  Clear the entire strip
+  ClearStrip();
+  
 	static int whitePosition = 0;
-	static const int redToWhiteRatio = 6;
-	static const int slowdown = 3;
-	
-	ClearStrip();
 	
 	for (int i = 0; i < MAX_LEDS; i++)
 	{
-		leds[i] = ((((whitePosition / slowdown) + i) % (redToWhiteRatio + 1)) == 0) ? CRGB::White : CRGB::Red;
+		leds[i] = ((((whitePosition / MSPACMAN_SLOWDOWN) + i) % (RED_TO_WHITE_RATIO + 1)) == 0) ? CRGB::White : CRGB::Red;
 	}
 	
 	FastLED.show();
 	whitePosition += 1;
-	if (whitePosition == ((redToWhiteRatio + 1) * slowdown)) whitePosition = 0;
+	if (whitePosition == ((RED_TO_WHITE_RATIO + 1) * MSPACMAN_SLOWDOWN)) whitePosition = 0;
 	
 	delay(DELAY_TIME);
 }
 
 void VegasMarquee()
 {
+  //  Clear the entire strip
+  ClearStrip();
+  
 	static int redPosition = 0;
-	const int blankToRedRatio = 1;
-	static const int slowdown = 5;
-	
-	ClearStrip();
 	
 	for (int i = 0; i < MAX_LEDS; i++)
 	{
-		leds[i] = ((((redPosition / slowdown) + i) % (blankToRedRatio + 1)) == 0) ? CRGB::Red : CRGB::Black;
+		leds[i] = ((((redPosition / MARQUEE_SLOWDOWN) + i) % (BLANK_TO_RED_RATIO + 1)) == 0) ? CRGB::Red : CRGB::Black;
 	}
 	
 	FastLED.show();
 	redPosition += 1;
-	if (redPosition == ((blankToRedRatio + 1) * slowdown)) redPosition = 0;
+	if (redPosition == ((BLANK_TO_RED_RATIO + 1) * MARQUEE_SLOWDOWN)) redPosition = 0;
 	
 	delay(DELAY_TIME);
 }
@@ -330,6 +360,141 @@ void Fireworks()
 	FastLED.show();
 }
 
+void FireballColor(CRGB& ledRef, int index)
+{
+  switch((millis() / FIREBALL_COLOR_DELAY) % 4)
+  {
+    case 0:
+      ledRef = (index == 0) ? CRGB::Red : CRGB(30, 0, 0);
+      break;
+    case 1:
+      ledRef = (index == 0) ? CRGB::Green : CRGB(0, 30, 0);
+      break;
+    case 2:
+      ledRef = (index == 0) ? CRGB::Blue : CRGB(0, 0, 30);
+      break;
+    case 3:
+      ledRef = (index == 0) ? CRGB::White : CRGB(30, 30, 30);
+      break;
+  }
+}
+
+void Fireballs()
+{
+  //  Clear the entire strip
+  ClearStrip();
+  
+  unsigned long currentTime = millis();
+  int iteration = (currentTime / FIREBALL_DELAY) % NUM_LEDS;
+  
+  for (int i = 0; i < FIREBALL_COUNT; ++i)
+  {
+    FireballColor(leds[LoopedLEDIndex(iteration + (i * NUM_LEDS / FIREBALL_COUNT))], 0);
+    for (int j = 0; j < FIREBALL_FOLLOWERS; ++j)
+    {
+      FireballColor(leds[LoopedLEDIndex(iteration + (i * NUM_LEDS / FIREBALL_COUNT) - 1 - j)], 1);
+    }
+  }
+ 
+  //  Render the fireballs
+  FastLED.show();
+}
+
+void CylonColor(CRGB& ledRef)
+{
+  switch((millis() / CYLON_COLOR_DELAY) % 4)
+  {
+    case 0:
+      ledRef = CRGB::Red;
+      break;
+    case 1:
+      ledRef = CRGB::Green;
+      break;
+    case 2:
+      ledRef = CRGB::Blue;
+      break;
+    case 3:
+      ledRef = CRGB::White;
+      break;
+  }
+}
+
+void Cylon()
+{
+  //  Clear the entire strip
+  ClearStrip();
+
+  int barPosition = (millis() / CYLON_BAR_DELAY) % CYLON_MAX_DISTANCE;
+  if (barPosition > CYLON_MAX_POSITION) barPosition = CYLON_MAX_POSITION - (barPosition - CYLON_MAX_POSITION);
+
+  for (int i = 0; i < CYLON_BAR_LENGTH; ++i)
+  {
+    CylonColor(leds[barPosition + i]);
+  }
+  
+  //  Render the cylon bar
+  FastLED.show();
+}
+
+void NewKITTColor(CRGB& ledRef, int index)
+{
+  switch((millis() / KITT_COLOR_DELAY) % 4)
+  {
+    case 0:
+      ledRef = (index == 0) ? CRGB::Red : CRGB(25, 0, 0);
+      break;
+    case 1:
+      ledRef = (index == 0) ? CRGB::Green : CRGB(0, 25, 0);
+      break;
+    case 2:
+      ledRef = (index == 0) ? CRGB::Blue : CRGB(0, 0, 25);
+      break;
+    case 3:
+      ledRef = (index == 0) ? CRGB::White : CRGB(25, 25, 25);
+      break;
+  }
+}
+
+void NewKITT()
+{
+  //  Clear the entire strip
+  ClearStrip();
+
+  int barPosition = (millis() / KITT_BAR_DELAY) % KITT_MAX_POSITION;
+  int patternIndex = (millis() / (KITT_BAR_DELAY * KITT_MAX_POSITION)) % 4;
+  
+  Serial.print(patternIndex);
+  Serial.print(" - ");
+  Serial.println(barPosition);
+  
+  switch (patternIndex)
+  {
+    case 0: //  first to last bar
+      for (int i = 0; i < KITT_BAR_LENGTH; ++i)
+      {
+        NewKITTColor(leds[barPosition + i], (i == 0 || i == KITT_BAR_LENGTH - 1) ? 1 : 0);
+      }
+      break;
+    case 1:
+    case 3:
+      for (int i = 0; i < KITT_BAR_LENGTH; ++i)
+      {
+        NewKITTColor(leds[((barPosition <= (KITT_MAX_POSITION / 2)) ? barPosition : (KITT_MAX_POSITION - barPosition)) + i], (i == 0 || i == KITT_BAR_LENGTH - 1) ? 1 : 0);
+        NewKITTColor(leds[((((KITT_MAX_POSITION - barPosition) > (KITT_MAX_POSITION / 2)) ? (KITT_MAX_POSITION - barPosition) : barPosition) + i)], (i == 0 || i == KITT_BAR_LENGTH - 1) ? 1 : 0);
+      }
+      break;
+    case 2: //  first to last bar
+      for (int i = 0; i < KITT_BAR_LENGTH; ++i)
+      {
+        NewKITTColor(leds[KITT_MAX_POSITION - barPosition + i], (i == 0 || i == KITT_BAR_LENGTH - 1) ? 1 : 0);
+      }
+      break;
+  }
+  
+  //  Render the cylon bar
+  FastLED.show();
+}
+
 void setup()
 {
 	pinMode(POTENTIOMETER_PIN, INPUT);
@@ -342,20 +507,21 @@ void setup()
 	ClearStrip();
 	FastLED.show();
 	
-	//  Set up the serial connection
-	Serial.begin(9600);
-	
 	//  Seed the random number generator
 	randomSeed(analogRead(0));
 	
 	//  Set the button timer to the current time
 	buttonTimer = millis();
+
+  Serial.begin(9600);
+  while (!Serial) { ; }
+  Serial.println("Program START!");
 }
 
 void loop()
 {
-	static long int PatternCount = 10;
-	static long int patternIndex = 0;
+	static long int PatternCount = 13;
+	static long int patternIndex = 12;
 	
 	//  Note: Comment this in ONLY if you have a potentiometer attached to POTENTIOMETER_PIN
 	//DELAY_TIME = analogRead(POTENTIOMETER_PIN);
@@ -376,15 +542,18 @@ void loop()
 	switch (patternIndex)
 	{
 		default:
-		case 0:		RainbowFlow1();				break;
-		case 1:		RainbowFlow2();				break;
-		case 2:		RainbowFlow2(0, true);		break;
-		case 3:		Pacman();					break;
-		case 4:		Fire();						break;
-		case 5:		GlowFlow();					break;
-		case 6:		GroupTest();				break;
-		case 7:		MsPacmanRedWhite();			break;
-		case 8:		VegasMarquee();				break;
-		case 9:		Fireworks();				break;
+		case 0:		RainbowFlow1();				  break;
+		case 1:		RainbowFlow2();				  break;
+		case 2:		RainbowFlow2(0, true);	break;
+		case 3:		Pacman();					      break;
+		case 4:		Fire();						      break;
+		case 5:		GlowFlow();					    break;
+		case 6:		GroupTest();				    break;
+		case 7:		MsPacmanRedWhite();	    break;
+		case 8:		VegasMarquee();			    break;
+		case 9:		Fireworks();				    break;
+    case 10:  Fireballs();            break;
+    case 11:  Cylon();                break;
+    case 12:  NewKITT();              break;
 	}
 }
