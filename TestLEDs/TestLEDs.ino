@@ -1,32 +1,10 @@
-/*
- ADXL362_SimpleRead.ino -  Simple XYZ axis reading example
- for Analog Devices ADXL362 - Micropower 3-axis accelerometer
- go to http://www.analog.com/ADXL362 for datasheet
- 
- 
- License: CC BY-SA 3.0: Creative Commons Share-alike 3.0. Feel free 
- to use and abuse this code however you'd like. If you find it useful
- please attribute, and SHARE-ALIKE!
- 
- Created June 2012
- by Anne Mahaffey - hosted on http://annem.github.com/ADXL362
-
- Modified May 2013
- by Jonathan Ruiz de Garibay
- 
-Connect SCLK, MISO, MOSI, and CSB of ADXL362 to
-SCLK, MISO, MOSI, and DP 10 of Arduino 
-(check http://arduino.cc/en/Reference/SPI for details)
- 
-*/ 
-
 #include <FastLED.h>
 
 #define LED_STRIP_PIN   10   //  The NeoPixel string data pin
 
-#define NUM_LEDS        5  //  The number of LEDs we want to alter
-#define MAX_LEDS        5  //  The number of LEDs on the full strip
-#define BRIGHTNESS  	60  //  The number (0 to 200) for the brightness setting)
+#define NUM_LEDS        138  //  The number of LEDs we want to alter
+#define MAX_LEDS        138  //  The number of LEDs on the full strip
+#define BRIGHTNESS  	  60  //  The number (0 to 200) for the brightness setting)
 #define DEBUG_OUTPUT    false
 
 CRGB leds[MAX_LEDS];

@@ -43,11 +43,14 @@
   0
 */
 
-#define PATTERN_SWITCH_BUTTON   46
-#define COLOR_SWITCH_BUTTON     47
+#define PATTERN_SWITCH_BUTTON   44
+#define COLOR_SWITCH_BUTTON     45
+#define BUTTON_DELAY            250
+
+unsigned long buttonTimer = 0;
 
 const int frameDelay = 120;
-const int columnPinsR[16] = { A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, 22, 23, 24, 25 };
+const int columnPinsR[16] = { A4, A5, A6, A7, A8, 48, A10, A11, A12, A13, A14, A15, 22, 23, 24, 25 };
 const int columnPinsG[16] = { 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, A0, A1, A2, A3 };
 const int columnPinsB[16] = { 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41 };
 const int levelPins[4] = { 52, 51, 50, 53 };
@@ -64,6 +67,8 @@ enum Colors
   COLOR_WHITE   = 7
 };
 char CurrentColor = COLOR_RED;
+
+int CurrentPattern = 10;
 
 const int bitsPerByte = 8;
 const int pixelCount = 64;
@@ -105,7 +110,7 @@ void setup()
     digitalWrite(levelPins[i], LOW);
   }
 
-  //  Set the button pins to INPUT_PULLUP
+  //  Set the button pins to INPUT_PULLUP and reset the button timer
   pinMode(PATTERN_SWITCH_BUTTON, INPUT_PULLUP); // connect internal pull-up
   pinMode(COLOR_SWITCH_BUTTON, INPUT_PULLUP); // connect internal pull-up
   
@@ -806,11 +811,24 @@ void Pattern_ZAxisToXAxis()
 
 void loop()
 {
-  static int currentPattern = 10;
-
-  //  TODO: Read button to switch currentPattern
-
-  switch (currentPattern)
+  unsigned long currentMillis = millis();
+  if (buttonTimer < currentMillis)
+  {
+    if (digitalRead(PATTERN_SWITCH_BUTTON) == LOW) //  Read the pattern switch button
+    {
+      buttonTimer = currentMillis + BUTTON_DELAY;
+      CurrentPattern++;
+      if (CurrentPattern > 10) CurrentPattern = 0;
+    }
+    else if (digitalRead(COLOR_SWITCH_BUTTON) == LOW) //  Read the color switch button
+    {
+      buttonTimer = currentMillis + BUTTON_DELAY;
+      CurrentColor++;
+      if (CurrentColor > COLOR_WHITE) CurrentColor = 1;
+    }
+  }
+  
+  switch (CurrentPattern)
   {
     case 0:   PatternReactorCore();       break;
     case 1:   Pattern_TwisterHalf();      break;
@@ -828,4 +846,3 @@ void loop()
   RenderDisplay();
   return;
 }
-

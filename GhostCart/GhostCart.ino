@@ -19,7 +19,6 @@ unsigned long buttonTimer = 0;
 #define BUTTON_DELAY			      400
 
 //  GlowFlow() values
-#define GLOW_FLOW_DELAY         15
 #define GLOW_FLOW_COLOR_TIME	  3000
 
 //  MsPacman() values
@@ -31,27 +30,40 @@ unsigned long buttonTimer = 0;
 #define MARQUEE_SLOWDOWN        5
 
 //  Fireworks() values
-#define FIREWORK_DELAY			    500
+#define FIREWORK_DELAY			    200
 #define FIREWORK_SIZE			      6
 
 //  Fireballs() values
 #define FIREBALL_COUNT          4
-#define FIREBALL_DELAY          60
+#define FIREBALL_DELAY          30
 #define FIREBALL_FOLLOWERS      4
 #define FIREBALL_COLOR_DELAY    5000
 
 //  Cylon() values
 #define CYLON_BAR_LENGTH        4
-#define CYLON_BAR_DELAY         25
+#define CYLON_BAR_DELAY         10
 #define CYLON_COLOR_DELAY       5000
 #define CYLON_MAX_POSITION      (NUM_LEDS - (CYLON_BAR_LENGTH - 1))
 #define CYLON_MAX_DISTANCE      (NUM_LEDS - (CYLON_BAR_LENGTH - 1)) * 2
 
 //  NewKITT() values
 #define KITT_BAR_LENGTH         8
-#define KITT_BAR_DELAY          25
+#define KITT_BAR_DELAY          15
 #define KITT_COLOR_DELAY        5000
 #define KITT_MAX_POSITION       (NUM_LEDS - KITT_BAR_LENGTH)
+
+//  Sparkle() values
+#define SPARKLE_DELAY           0
+#define SPARKLE_COLOR_DELAY     5000
+
+//  SnowSparkle() values
+#define SNOWSPARKLE_DELAY           25
+#define SNOWSPARKLE_POSTDELAY_MIN   100
+#define SNOWSPARKLE_POSTDELAY_MAX   1000
+#define SNOWSPARKLE_COLOR_DELAY     5000
+
+//  TheatreChaseRainbow() values
+#define THEATRECHASERAINBOW_DELAY   40
 
 
 CRGB leds[MAX_LEDS];
@@ -162,9 +174,36 @@ CRGB Wheel(byte wheelPosition)
     }
 }
 
+byte * Wheel2(byte WheelPos) {
+  static byte c[3];
+  
+  if(WheelPos < 85) {
+   c[0]=WheelPos * 3;
+   c[1]=255 - WheelPos * 3;
+   c[2]=0;
+  } else if(WheelPos < 170) {
+   WheelPos -= 85;
+   c[0]=255 - WheelPos * 3;
+   c[1]=0;
+   c[2]=WheelPos * 3;
+  } else {
+   WheelPos -= 170;
+   c[0]=0;
+   c[1]=WheelPos * 3;
+   c[2]=255 - WheelPos * 3;
+  }
+
+  return c;
+}
+
 void ClearStrip()
 {
 	fill_solid(leds, MAX_LEDS, CRGB::Black);
+}
+
+void SetStrip(CRGB color)
+{
+  fill_solid(leds, MAX_LEDS, color);
 }
 
 inline bool IsPositionOnStrip(int position)
@@ -196,7 +235,7 @@ void Pacman()
 	
 	FastLED.show();
 	pacmanPosition = P1 + 1;
-	delay(DELAY_TIME);
+	delay(25 + DELAY_TIME);
 }
 
 void RainbowFlow1()
@@ -205,6 +244,7 @@ void RainbowFlow1()
 	hue++;
 	fill_rainbow(leds, MAX_LEDS, hue, -3);
 	FastLED.show();
+  delay(DELAY_TIME);
 }
 
 void RainbowFlow2(int speed = 1, bool berzerk = false)
@@ -217,15 +257,15 @@ void RainbowFlow2(int speed = 1, bool berzerk = false)
     }
     
     if (!berzerk) rainbowPosition += speed;
-    delay(50);
+    delay(25 + DELAY_TIME);
 	FastLED.show();
 }
 
-void Fire()
+void Fire(int R, int G, int B)
 {
-	int r = 255;
-	int g = r - 80;
-	int b = 40;
+	int r = R;
+	int g = G;
+	int b = B;
 
 	for (int i = 0; i < MAX_LEDS; i++)
 	{
@@ -239,7 +279,7 @@ void Fire()
 		leds[i] = CRGB(r1, g1, b1);
 	}
 	FastLED.show();
-	delay(random(50,150));
+	delay(random(DELAY_TIME * 2, DELAY_TIME * 6));
 }
 
 void GlowFlow()
@@ -251,14 +291,14 @@ void GlowFlow()
 	static bool adding = false;
 	
 	adding = false;
-	if (colorDelta.R > 0) { colorDelta.R -= 1; colorCurrent.R = min(255, colorCurrent.R + 1); delay(GLOW_FLOW_DELAY); adding = true; }
-	if (colorDelta.G > 0) { colorDelta.G -= 1; colorCurrent.G = min(255, colorCurrent.G + 1); delay(GLOW_FLOW_DELAY); adding = true; }
-	if (colorDelta.B > 0) { colorDelta.B -= 1; colorCurrent.B = min(255, colorCurrent.B + 1); delay(GLOW_FLOW_DELAY); adding = true; }
+	if (colorDelta.R > 0) { colorDelta.R -= 1; colorCurrent.R = min(255, colorCurrent.R + 1); delay(DELAY_TIME); adding = true; }
+	if (colorDelta.G > 0) { colorDelta.G -= 1; colorCurrent.G = min(255, colorCurrent.G + 1); delay(DELAY_TIME); adding = true; }
+	if (colorDelta.B > 0) { colorDelta.B -= 1; colorCurrent.B = min(255, colorCurrent.B + 1); delay(DELAY_TIME); adding = true; }
 	if (adding == false)
 	{
-		if (colorDelta.R < 0) { colorDelta.R += 1; colorCurrent.R = max(0,   colorCurrent.R - 1); delay(GLOW_FLOW_DELAY); }
-		if (colorDelta.G < 0) { colorDelta.G += 1; colorCurrent.G = max(0,   colorCurrent.G - 1); delay(GLOW_FLOW_DELAY); }
-		if (colorDelta.B < 0) { colorDelta.B += 1; colorCurrent.B = max(0,   colorCurrent.B - 1); delay(GLOW_FLOW_DELAY); }
+		if (colorDelta.R < 0) { colorDelta.R += 1; colorCurrent.R = max(0,   colorCurrent.R - 1); delay(DELAY_TIME); }
+		if (colorDelta.G < 0) { colorDelta.G += 1; colorCurrent.G = max(0,   colorCurrent.G - 1); delay(DELAY_TIME); }
+		if (colorDelta.B < 0) { colorDelta.B += 1; colorCurrent.B = max(0,   colorCurrent.B - 1); delay(DELAY_TIME); }
 	}
 	
 	CRGB currentCRGB(colorCurrent.R, colorCurrent.G, colorCurrent.B);
@@ -278,19 +318,26 @@ void GlowFlow()
 			
 		} while (colorDelta.isZero());
 		
-		nextChangeTime = millis() + GLOW_FLOW_COLOR_TIME;
+		nextChangeTime = millis() + (DELAY_TIME * 100);
 	}
 }
 
 void GroupTest()
 {
-  //  Clear the entire strip
-  ClearStrip();
+  static unsigned long nextChangeTime = 0;
+  static int groupIndex = 0;
   
-	LightGroupNames group = LightGroupNames((millis() / 250) % LIGHT_GROUP_COUNT);
-	
-	SetGroupColor(group, CRGB::Red);
-	FastLED.show();
+  if (nextChangeTime < millis())
+  {
+    groupIndex = ((++groupIndex) % LIGHT_GROUP_COUNT);
+    
+    //  Clear the entire strip
+    ClearStrip();
+    LightGroupNames group = LightGroupNames(groupIndex);
+    SetGroupColor(group, CRGB::Red);
+
+    nextChangeTime = millis() + (100 + (DELAY_TIME * 15));
+  }
 }
 
 void MsPacmanRedWhite()
@@ -309,11 +356,13 @@ void MsPacmanRedWhite()
 	whitePosition += 1;
 	if (whitePosition == ((RED_TO_WHITE_RATIO + 1) * MSPACMAN_SLOWDOWN)) whitePosition = 0;
 	
-	delay(DELAY_TIME);
+	delay(10 + DELAY_TIME);
 }
 
-void VegasMarquee()
+void VegasMarquee(int r, int g, int b)
 {
+  CRGB mainColor(r, g, b);
+  
   //  Clear the entire strip
   ClearStrip();
   
@@ -321,14 +370,14 @@ void VegasMarquee()
 	
 	for (int i = 0; i < MAX_LEDS; i++)
 	{
-		leds[i] = ((((redPosition / MARQUEE_SLOWDOWN) + i) % (BLANK_TO_RED_RATIO + 1)) == 0) ? CRGB::Red : CRGB::Black;
+		leds[i] = ((((redPosition / MARQUEE_SLOWDOWN) + i) % (BLANK_TO_RED_RATIO + 1)) == 0) ? mainColor : CRGB::Black;
 	}
 	
 	FastLED.show();
 	redPosition += 1;
 	if (redPosition == ((BLANK_TO_RED_RATIO + 1) * MARQUEE_SLOWDOWN)) redPosition = 0;
 	
-	delay(DELAY_TIME);
+	delay(10 + DELAY_TIME);
 }
 
 void FireworksSetup()
@@ -348,7 +397,7 @@ void Fireworks()
 	unsigned long currentTime = millis();
 	
 	//  Create a new firework if enough time has passed
-	if (currentTime > lastFireworkTime + FIREWORK_DELAY)
+	if (currentTime > lastFireworkTime + FIREWORK_DELAY + (DELAY_TIME * 12))
 	{
 		int position = random(MAX_LEDS);
 		int colorIndex = 1 + random(COMMON_COLOR_COUNT - 1);
@@ -360,39 +409,23 @@ void Fireworks()
 	FastLED.show();
 }
 
-void FireballColor(CRGB& ledRef, int index)
-{
-  switch((millis() / FIREBALL_COLOR_DELAY) % 4)
-  {
-    case 0:
-      ledRef = (index == 0) ? CRGB::Red : CRGB(30, 0, 0);
-      break;
-    case 1:
-      ledRef = (index == 0) ? CRGB::Green : CRGB(0, 30, 0);
-      break;
-    case 2:
-      ledRef = (index == 0) ? CRGB::Blue : CRGB(0, 0, 30);
-      break;
-    case 3:
-      ledRef = (index == 0) ? CRGB::White : CRGB(30, 30, 30);
-      break;
-  }
-}
-
-void Fireballs()
+void Fireballs(int r1, int g1, int b1, int r2, int g2, int b2)
 {
   //  Clear the entire strip
   ClearStrip();
+
+  CRGB mainColor(r1, g1, b1);
+  CRGB followColor(r2, g2, b2);
   
   unsigned long currentTime = millis();
-  int iteration = (currentTime / FIREBALL_DELAY) % NUM_LEDS;
+  int iteration = (currentTime / (FIREBALL_DELAY + DELAY_TIME * 2)) % NUM_LEDS;
   
   for (int i = 0; i < FIREBALL_COUNT; ++i)
   {
-    FireballColor(leds[LoopedLEDIndex(iteration + (i * NUM_LEDS / FIREBALL_COUNT))], 0);
+    leds[LoopedLEDIndex(iteration + (i * NUM_LEDS / FIREBALL_COUNT))] = mainColor;
     for (int j = 0; j < FIREBALL_FOLLOWERS; ++j)
     {
-      FireballColor(leds[LoopedLEDIndex(iteration + (i * NUM_LEDS / FIREBALL_COUNT) - 1 - j)], 1);
+      leds[LoopedLEDIndex(iteration + (i * NUM_LEDS / FIREBALL_COUNT) - 1 - j)] = followColor;
     }
   }
  
@@ -400,9 +433,67 @@ void Fireballs()
   FastLED.show();
 }
 
-void CylonColor(CRGB& ledRef)
+void Cylon(int r, int g, int b)
 {
-  switch((millis() / CYLON_COLOR_DELAY) % 4)
+  CRGB mainColor(r, g, b);
+  
+  //  Clear the entire strip
+  ClearStrip();
+
+  int barPosition = (millis() / (CYLON_BAR_DELAY + DELAY_TIME)) % CYLON_MAX_DISTANCE;
+  if (barPosition > CYLON_MAX_POSITION) barPosition = CYLON_MAX_POSITION - (barPosition - CYLON_MAX_POSITION);
+
+  for (int i = 0; i < CYLON_BAR_LENGTH; ++i)
+  {
+    leds[barPosition + i] = mainColor;
+  }
+  
+  //  Render the cylon bar
+  FastLED.show();
+}
+
+void NewKITT(int r1, int g1, int b1, int r2, int g2, int b2)
+{
+  CRGB mainColor(r1, g1, b1);
+  CRGB edgeColor(r2, g2, b2);
+  
+  //  Clear the entire strip
+  ClearStrip();
+
+  int barPosition = (millis() / (KITT_BAR_DELAY + (DELAY_TIME * 2))) % KITT_MAX_POSITION;
+  int patternIndex = (millis() / ((KITT_BAR_DELAY + (DELAY_TIME * 2)) * KITT_MAX_POSITION)) % 4;
+  
+  switch (patternIndex)
+  {
+    case 0: //  first to last bar
+      for (int i = 0; i < KITT_BAR_LENGTH; ++i)
+      {
+        leds[barPosition + i] = ((i == 0 || i == KITT_BAR_LENGTH - 1) ? edgeColor : mainColor);
+      }
+      break;
+    case 1:
+    case 3:
+      for (int i = 0; i < KITT_BAR_LENGTH; ++i)
+      {
+        leds[((barPosition <= (KITT_MAX_POSITION / 2)) ? barPosition : (KITT_MAX_POSITION - barPosition)) + i] = ((i == 0 || i == KITT_BAR_LENGTH - 1) ? edgeColor : mainColor);
+        leds[((((KITT_MAX_POSITION - barPosition) > (KITT_MAX_POSITION / 2)) ? (KITT_MAX_POSITION - barPosition) : barPosition) + i)] = ((i == 0 || i == KITT_BAR_LENGTH - 1) ? edgeColor : mainColor);
+      }
+      break;
+    case 2: //  first to last bar
+      for (int i = 0; i < KITT_BAR_LENGTH; ++i)
+      {
+        leds[KITT_MAX_POSITION - barPosition + i] = ((i == 0 || i == KITT_BAR_LENGTH - 1) ? edgeColor : mainColor);
+      }
+      break;
+  }
+  
+  //  Render the display
+  FastLED.show();
+}
+
+void SparkleColor(CRGB& ledRef)
+{
+  switch((millis() / SPARKLE_COLOR_DELAY) % 4)
   {
     case 0:
       ledRef = CRGB::Red;
@@ -419,81 +510,81 @@ void CylonColor(CRGB& ledRef)
   }
 }
 
-void Cylon()
+void Sparkle(int r, int g, int b)
 {
-  //  Clear the entire strip
-  ClearStrip();
-
-  int barPosition = (millis() / CYLON_BAR_DELAY) % CYLON_MAX_DISTANCE;
-  if (barPosition > CYLON_MAX_POSITION) barPosition = CYLON_MAX_POSITION - (barPosition - CYLON_MAX_POSITION);
-
-  for (int i = 0; i < CYLON_BAR_LENGTH; ++i)
-  {
-    CylonColor(leds[barPosition + i]);
-  }
-  
-  //  Render the cylon bar
+  CRGB sparkleColor(r, g, b);
+  int randomLED = random(NUM_LEDS);
+  leds[randomLED] = sparkleColor;
+   
+  //  Render the display
   FastLED.show();
+  
+  delay(SPARKLE_DELAY + (DELAY_TIME / 5));
+  leds[randomLED] = CRGB::Black;
 }
 
-void NewKITTColor(CRGB& ledRef, int index)
+void SnowSparkle(int r1, int g1, int b1, int r2, int g2, int b2)
 {
-  switch((millis() / KITT_COLOR_DELAY) % 4)
-  {
-    case 0:
-      ledRef = (index == 0) ? CRGB::Red : CRGB(25, 0, 0);
-      break;
-    case 1:
-      ledRef = (index == 0) ? CRGB::Green : CRGB(0, 25, 0);
-      break;
-    case 2:
-      ledRef = (index == 0) ? CRGB::Blue : CRGB(0, 0, 25);
-      break;
-    case 3:
-      ledRef = (index == 0) ? CRGB::White : CRGB(25, 25, 25);
-      break;
-  }
-}
+  CRGB mainColor(r1, g1, b1);
+  CRGB sparkleColor(r2, g2, b2);
+  
+  static int randomLED = 0;
+  static int delayTime = 0;
+  static long int nextSparkle = 0;
 
-void NewKITT()
-{
-  //  Clear the entire strip
-  ClearStrip();
-
-  int barPosition = (millis() / KITT_BAR_DELAY) % KITT_MAX_POSITION;
-  int patternIndex = (millis() / (KITT_BAR_DELAY * KITT_MAX_POSITION)) % 4;
+  if (millis() < nextSparkle) return;
   
-  Serial.print(patternIndex);
-  Serial.print(" - ");
-  Serial.println(barPosition);
+  leds[randomLED] = mainColor;
   
-  switch (patternIndex)
-  {
-    case 0: //  first to last bar
-      for (int i = 0; i < KITT_BAR_LENGTH; ++i)
-      {
-        NewKITTColor(leds[barPosition + i], (i == 0 || i == KITT_BAR_LENGTH - 1) ? 1 : 0);
-      }
-      break;
-    case 1:
-    case 3:
-      for (int i = 0; i < KITT_BAR_LENGTH; ++i)
-      {
-        NewKITTColor(leds[((barPosition <= (KITT_MAX_POSITION / 2)) ? barPosition : (KITT_MAX_POSITION - barPosition)) + i], (i == 0 || i == KITT_BAR_LENGTH - 1) ? 1 : 0);
-        NewKITTColor(leds[((((KITT_MAX_POSITION - barPosition) > (KITT_MAX_POSITION / 2)) ? (KITT_MAX_POSITION - barPosition) : barPosition) + i)], (i == 0 || i == KITT_BAR_LENGTH - 1) ? 1 : 0);
-      }
-      break;
-    case 2: //  first to last bar
-      for (int i = 0; i < KITT_BAR_LENGTH; ++i)
-      {
-        NewKITTColor(leds[KITT_MAX_POSITION - barPosition + i], (i == 0 || i == KITT_BAR_LENGTH - 1) ? 1 : 0);
-      }
-      break;
-  }
-  
-  //  Render the cylon bar
+  //  Render the display
   FastLED.show();
+  
+  delay(delayTime);
+  
+  SetStrip(mainColor);
+  
+  randomLED = random(NUM_LEDS);
+  delayTime = random(SNOWSPARKLE_POSTDELAY_MIN, SNOWSPARKLE_POSTDELAY_MAX);
+  
+  leds[randomLED] = sparkleColor;
+   
+  //  Render the display
+  FastLED.show();
+
+  nextSparkle = millis() + SNOWSPARKLE_DELAY + DELAY_TIME * 2;
 }
+
+void TheatreChaseRainbow()
+{
+  byte *c;
+  
+  static int j = 0;
+  static int q = 0;
+  static int i = 0;
+  
+  for (int i=0; i < NUM_LEDS; i=i+3) {
+    if (i + q >= MAX_LEDS) continue;
+    c = Wheel2( (i+j) % 255);
+    leds[i+q] = CRGB(*c, *(c+1), *(c+2));    //turn every third pixel on
+  }
+  
+  //  Render the display
+  FastLED.show();
+ 
+  delay(THEATRECHASERAINBOW_DELAY + DELAY_TIME);
+ 
+  for (int i=0; i < NUM_LEDS; i=i+3) {
+    if (i + q >= MAX_LEDS) continue;
+    leds[i+q] = CRGB::Black;        //turn every third pixel off
+  }
+
+  if (++q >= 3)
+  {
+    q = 0;
+    if (++j >= 256) j = 0;
+  }
+}
+
 
 void setup()
 {
@@ -520,12 +611,17 @@ void setup()
 
 void loop()
 {
-	static long int PatternCount = 13;
-	static long int patternIndex = 12;
+	static long int PatternCount = 17;
+	static long int patternIndex = 0;
 	
 	//  Note: Comment this in ONLY if you have a potentiometer attached to POTENTIOMETER_PIN
-	//DELAY_TIME = analogRead(POTENTIOMETER_PIN);
-	//DELAY_TIME = map(DELAY_TIME, 0, 1023, 5, 45);
+  int newDelayTime = map(analogRead(POTENTIOMETER_PIN), 0, 1023, 1, 50);
+  if (abs(newDelayTime - DELAY_TIME) >= 2)
+  {
+	  DELAY_TIME = newDelayTime;
+    Serial.print("New DELAY_TIME: ");
+    Serial.println(DELAY_TIME);
+  }
 	
 	unsigned long currentMillis = millis();
 	if (buttonTimer < currentMillis)
@@ -533,27 +629,79 @@ void loop()
 		if (digitalRead(BUTTON_PIN) == LOW)
 		{
 			buttonTimer = currentMillis + BUTTON_DELAY;
-			patternIndex = (patternIndex + 1) % PatternCount;
+			++patternIndex;
 			ClearStrip();
-			if (patternIndex == 9) FireworksSetup();
+			if (patternIndex == 10) FireworksSetup();
 		}
 	}
 	
 	switch (patternIndex)
 	{
-		default:
-		case 0:		RainbowFlow1();				  break;
-		case 1:		RainbowFlow2();				  break;
-		case 2:		RainbowFlow2(0, true);	break;
-		case 3:		Pacman();					      break;
-		case 4:		Fire();						      break;
-		case 5:		GlowFlow();					    break;
-		case 6:		GroupTest();				    break;
-		case 7:		MsPacmanRedWhite();	    break;
-		case 8:		VegasMarquee();			    break;
-		case 9:		Fireworks();				    break;
-    case 10:  Fireballs();            break;
-    case 11:  Cylon();                break;
-    case 12:  NewKITT();              break;
+		case 0:		RainbowFlow1();				                    break;
+		case 1:		RainbowFlow2();				                    break;
+		case 2:		RainbowFlow2(0, true);	                  break;
+		case 3:		Pacman();					                        break;
+    case 4:   Fire(255, 0, 0);                          break;
+    case 5:   Fire(0, 255, 0);                          break;
+    case 6:   Fire(0, 0, 255);                          break;
+		case 7:		Fire(255, 175, 40);			                  break;
+    case 8:   Fire(255, 255, 0);                        break;
+    case 9:   Fire(128, 0, 128);                        break;
+    case 10:  Fire(255, 40, 255);                       break;
+    case 11:  Fire(255, 255, 255);                      break;
+		case 12:  GlowFlow();					                      break;
+		case 13:	GroupTest();				                      break;
+		case 14:	MsPacmanRedWhite();	                      break;
+		case 15:	VegasMarquee(255, 0, 0);			            break;
+    case 16:  VegasMarquee(0, 255, 0);                  break;
+    case 17:  VegasMarquee(0, 0, 255);                  break;
+    case 18:  VegasMarquee(255, 175, 40);               break;
+    case 19:  VegasMarquee(255, 255, 0);                break;
+    case 20:  VegasMarquee(128, 0, 128);                break;
+    case 21:  VegasMarquee(255, 40, 255);               break;
+    case 22:  VegasMarquee(255, 255, 255);              break;
+		case 23:  Fireworks();				                      break;
+    case 24:  Fireballs(255, 0, 0, 25, 0, 0);           break;
+    case 25:  Fireballs(0, 255, 0, 0, 25, 0);           break;
+    case 26:  Fireballs(0, 0, 255, 0, 0, 25);           break;
+    case 27:  Fireballs(255, 175, 40, 25, 17, 4);       break;
+    case 28:  Fireballs(255, 255, 0, 25, 25, 0);        break;
+    case 29:  Fireballs(128, 0, 128, 12, 0, 12);        break;
+    case 30:  Fireballs(255, 40, 255, 25, 4, 25);       break;
+    case 31:  Fireballs(255, 255, 255, 25, 25, 25);     break;
+    case 32:  Cylon(255, 0, 0);                         break;
+    case 33:  Cylon(0, 255, 0);                         break;
+    case 34:  Cylon(0, 0, 255);                         break;
+    case 35:  Cylon(255, 175, 40);                      break;
+    case 36:  Cylon(255, 255, 0);                       break;
+    case 37:  Cylon(128, 0, 128);                       break;
+    case 38:  Cylon(255, 40, 255);                      break;
+    case 39:  Cylon(255, 255, 255);                     break;
+    case 40:  NewKITT(255, 0, 0, 25, 0, 0);             break;
+    case 41:  NewKITT(0, 255, 0, 0, 25, 0);             break;
+    case 42:  NewKITT(0, 0, 255, 0, 0, 25);             break;
+    case 43:  NewKITT(255, 175, 40, 25, 17, 4);         break;
+    case 44:  NewKITT(255, 255, 0, 25, 25, 0);          break;
+    case 45:  NewKITT(128, 0, 128, 12, 0, 12);          break;
+    case 46:  NewKITT(255, 40, 255, 25, 4, 25);         break;
+    case 47:  NewKITT(255, 255, 255, 25, 25, 25);       break;
+    case 48:  Sparkle(255, 0, 0);                       break;
+    case 49:  Sparkle(0, 255, 0);                       break;
+    case 50:  Sparkle(0, 0, 255);                       break;
+    case 51:  Sparkle(255, 175, 40);                    break;
+    case 52:  Sparkle(255, 255, 0);                     break;
+    case 53:  Sparkle(128, 0, 128);                     break;
+    case 54:  Sparkle(255, 40, 255);                    break;
+    case 55:  Sparkle(255, 255, 255);                   break;
+    case 56:  SnowSparkle(255, 0, 0, 25, 0, 0);         break;
+    case 57:  SnowSparkle(0, 255, 0, 0, 25, 0);         break;
+    case 58:  SnowSparkle(0, 0, 255, 0, 0, 25);         break;
+    case 59:  SnowSparkle(255, 175, 40, 25, 17, 4);     break;
+    case 60:  SnowSparkle(255, 255, 0, 25, 25, 0);      break;
+    case 61:  SnowSparkle(128, 0, 128, 12, 0, 12);      break;
+    case 62:  SnowSparkle(255, 40, 255, 25, 4, 25);     break;
+    case 63:  SnowSparkle(255, 255, 255, 25, 25, 25);   break;
+    case 64:  TheatreChaseRainbow();                    break;
+    default:  patternIndex = 0;                         break;
 	}
 }
