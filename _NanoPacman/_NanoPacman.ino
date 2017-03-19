@@ -1,3 +1,4 @@
+
 #include <FastLED.h>
 #include <LedControl.h>
 
@@ -360,11 +361,11 @@ int DotCount = 0;
 //  NOTE: Death sequence... fade from pacman to the color of the ghost that ate him? No flash?
 
 #define LED_STRIP_PIN   10	//  The NeoPixel string data pin
-#define BUTTON_PIN		9	//  The pin that controls the button signal
-#define Button_U 		5
-#define Button_D 		6
-#define Button_L 		7
-#define Button_R 		8
+#define BUTTON_PIN		2	//  The pin that controls the button signal
+#define Button_U 		3
+#define Button_D 		4
+#define Button_L 		5
+#define Button_R 		6
 
 const uint16_t BUTTON_POWER = 0xD827; // i.e. 0x10EFD827
 const uint16_t BUTTON_A = 0xF807;
@@ -391,7 +392,7 @@ char ghostBlink = 0;
 char powerPillBlink = 0;
 bool attractMode = false;
 
-LedControl sevenSeg = LedControl(13,12,11,1);
+LedControl sevenSeg = LedControl(7,9,8,1);
 
 void setScoreDisplay(int score, int level)
 {
