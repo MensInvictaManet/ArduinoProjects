@@ -392,7 +392,7 @@ char ghostBlink = 0;
 char powerPillBlink = 0;
 bool attractMode = false;
 
-LedControl sevenSeg = LedControl(7,9,8,1);
+LedControl sevenSeg = LedControl(7,8,9,1);
 
 void setScoreDisplay(int score, int level)
 {
