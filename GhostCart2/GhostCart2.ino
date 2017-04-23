@@ -590,7 +590,7 @@ void DrawMegaManRun01(int x, int y, byte outline, byte body1, byte body2, byte s
   SetLED(x + 3, y - 3, skin);
   SetLED(x + 4, y - 3, outline);
   SetLED(x + 5, y - 3, eyes);
-  SetLED(x + 6, y - 3, skin);
+  SetLED(x + 6, y - 3, outline);
   SetLights(x - 9, y - 2, 2, outline); // START ROW -2
   SetLights(x - 7, y - 2, 3, body2);
   SetLED(x - 4, y - 2, outline);
