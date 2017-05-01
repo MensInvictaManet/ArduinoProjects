@@ -174,26 +174,22 @@ CRGB Wheel(byte wheelPosition)
     }
 }
 
-byte * Wheel2(byte WheelPos) {
-  static byte c[3];
-  
-  if(WheelPos < 85) {
-   c[0]=WheelPos * 3;
-   c[1]=255 - WheelPos * 3;
-   c[2]=0;
-  } else if(WheelPos < 170) {
-   WheelPos -= 85;
-   c[0]=255 - WheelPos * 3;
-   c[1]=0;
-   c[2]=WheelPos * 3;
-  } else {
-   WheelPos -= 170;
-   c[0]=0;
-   c[1]=WheelPos * 3;
-   c[2]=255 - WheelPos * 3;
+CRGB Wheel2(byte wheelPosition)
+{
+  if(wheelPosition < 85)
+  {
+    return CRGB(wheelPosition * 3, 255 - wheelPosition * 3, 0);
   }
-
-  return c;
+  else if(wheelPosition < 170)
+  {
+    wheelPosition -= 85;
+    return CRGB(255 - wheelPosition * 3, 0, wheelPosition * 3);
+  }
+  else
+  {
+    wheelPosition -= 170;
+    return CRGB(0, wheelPosition * 3, 255 - wheelPosition * 3);
+  }
 }
 
 void ClearStrip()
@@ -556,16 +552,14 @@ void SnowSparkle(int r1, int g1, int b1, int r2, int g2, int b2)
 
 void TheatreChaseRainbow()
 {
-  byte *c;
-  
   static int j = 0;
   static int q = 0;
   static int i = 0;
   
-  for (int i=0; i < NUM_LEDS; i=i+3) {
+  for (int i = 0; i < NUM_LEDS; i = i + 3)
+  {
     if (i + q >= MAX_LEDS) continue;
-    c = Wheel2( (i+j) % 255);
-    leds[i+q] = CRGB(*c, *(c+1), *(c+2));    //turn every third pixel on
+    leds[i+q] = Wheel2( (i+j) % 255);    //turn every third pixel on
   }
   
   //  Render the display
@@ -573,9 +567,10 @@ void TheatreChaseRainbow()
  
   delay(THEATRECHASERAINBOW_DELAY + DELAY_TIME);
  
-  for (int i=0; i < NUM_LEDS; i=i+3) {
+  for (int i = 0; i < NUM_LEDS; i = i + 3) =
+  {
     if (i + q >= MAX_LEDS) continue;
-    leds[i+q] = CRGB::Black;        //turn every third pixel off
+    leds[i+q] = CRGB::Black;        //  turn every third pixel off
   }
 
   if (++q >= 3)
