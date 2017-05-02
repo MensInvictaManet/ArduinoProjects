@@ -3,9 +3,8 @@
 
 #define LED_STRIP_PIN   	9   //  The NeoPixel string data pin
 #define BUTTON_PIN        6   //  The pin that controls the button signal
-#define NUM_LEDS        	30  //  The number of LEDs we want to alter
-#define MAX_LEDS        	30  //  The number of LEDs on the full strip
-#define NUM_LEDS_VIRTUAL	46  //  The number of LEDs to virtually travel. AKA the loop will continue until the position passes this number
+#define NUM_LEDS        	180  //  The number of LEDs we want to alter
+#define MAX_LEDS        	180  //  The number of LEDs on the full strip
 #define BRIGHTNESS      	60  //  The number (0 to 200) for the brightness setting)
 #define BUTTON_DELAY      250 //  The amount of milliseconds between button checks
 #define DEBUG_OUTPUT    	true
