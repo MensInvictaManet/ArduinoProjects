@@ -56,9 +56,9 @@ void setup(){
   pinMode(MIC_PIN, INPUT);
   
   //  Setup the LED strip and color all LEDs black
-  FastLED.addLeds<WS2811, LED_STRIP_PIN, GRB>(leds, MAX_LEDS).setCorrection( TypicalLEDStrip );
-  FastLED.setBrightness(BRIGHTNESS);
-  fillColor(CRGB::Black, true);
+  //FastLED.addLeds<WS2811, LED_STRIP_PIN, GRB>(leds, MAX_LEDS).setCorrection( TypicalLEDStrip );
+  //FastLED.setBrightness(BRIGHTNESS);
+  //fillColor(CRGB::Black, true);
 
   memset(vol,0,sizeof(int)*SAMPLES);//Thanks Neil!
 
