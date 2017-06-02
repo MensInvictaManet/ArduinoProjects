@@ -1,9 +1,9 @@
 #include <FastLED.h>
 
-#define LED_STRIP_PIN   9   //  The NeoPixel string data pin
+#define LED_STRIP_PIN   12   //  The NeoPixel string data pin
 
-#define NUM_LEDS        21  //  The number of LEDs we want to alter
-#define MAX_LEDS        21  //  The number of LEDs on the full strip
+#define NUM_LEDS        34  //  The number of LEDs we want to alter
+#define MAX_LEDS        34  //  The number of LEDs on the full strip
 #define BRIGHTNESS  	  60  //  The number (0 to 200) for the brightness setting)
 #define DEBUG_OUTPUT    false
 

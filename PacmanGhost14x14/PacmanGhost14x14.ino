@@ -2,14 +2,17 @@
 
 #define LED_DATA_PIN            2         //  The WS2801 string data pin
 #define LED_CLOCK_PIN           4         //  The WS2801 string clock pin
-#define POTENTIOMETER_PIN       A0        //  The data pin to the potentiometer
-#define BUTTON_PIN              10        //  The pin that the button is connected to
+#define PATTERN_SWITCH_BUTTON   10        //  The pin that the button is connected to
 
-#define PANEL_WIDTH             28
-#define PANEL_HEIGHT            28
-#define NUM_LEDS                PANEL_WIDTH * PANEL_HEIGHT        //  The number of LEDs we want to control
-#define MAX_LEDS                NUM_LEDS                          //  The number of LEDs on the full strip
-#define BRIGHTNESS              60                                //  The number (0 to 200) for the brightness setting)
+#define PANEL_WIDTH             14
+#define PANEL_HEIGHT            14
+#define DIGITAL_LED_COUNT       PANEL_WIDTH * PANEL_HEIGHT    //  The fake number of LEDs to consider for position checking
+#define LED_COUNT               158                           //  The number of LEDs we want to control
+#define BRIGHTNESS              60                            //  The number (0 to 200) for the brightness setting)
+
+#define NES_DATA_PIN            6
+#define NES_CLOCK_PIN           4
+#define NES_LATCH_PIN           5
 
 #define A_BUTTON                0
 #define B_BUTTON                1
@@ -20,18 +23,16 @@
 #define LEFT_BUTTON             6
 #define RIGHT_BUTTON            7
 
-#define NES_DATA_PIN            6
-#define NES_CLOCK_PIN           4
-#define NES_LATCH_PIN           5
-
 #define TETRIS_BOARD_START_X    9
 #define TETRIS_BOARD_START_Y    4
-#define TETRIS_BOARD_WIDTH      10
-#define TETRIS_BOARD_HEIGHT     20
+#define TETRIS_BOARD_WIDTH      14
+#define TETRIS_BOARD_HEIGHT     12
+
+#define TETRIS_INDEX            14       
+
+#define USING_WS2801            false
 
 byte NESRegister = 0; //  We will use this to hold current button states
-
-#define GHOST_CART              false
 
 unsigned long startTime = 0;
 unsigned long buttonTimer = 0;
@@ -43,11 +44,32 @@ byte patternIndex = 0;
 #define FRAME_MILLIS            333
 #define BUTTON_DELAY            400
 
-CRGB leds[MAX_LEDS];
+CRGB leds[LED_COUNT];
 
 //////////////////////////////
 //  HELPER FUNCTIONS
 //////////////////////////////
+int GetIndexInGhostShape(int index)
+{
+  if      (index >= 195)  index -= 38;
+  else if (index >= 190)  index -= 35;
+  else if (index >= 186)  index -= 33;
+  else if (index >= 180)  index -= 30;
+  else if (index >= 176)  index -= 29;
+  else if (index >= 171)  index -= 27;
+  else if (index >=  84)  index -= 26;
+  else if (index >=  71)  index -= 25;
+  else if (index >=  57)  index -= 23;
+  else if (index >=  43)  index -= 21;
+  else if (index >=  30)  index -= 18;
+  else if (index >=  17)  index -= 13;
+  else if (index >=   5)  index -=  5;
+
+  return index;
+}
+
+int GetIndexInGhostShape(int x, int y) { return GetIndexInGhostShape(y * PANEL_WIDTH + x); }
+  
 CRGB Wheel(byte wheelPosition)
 {
     wheelPosition = 255 - wheelPosition;
@@ -83,13 +105,6 @@ CRGB Wheel2(byte wheelPosition)
     wheelPosition -= 170;
     return CRGB(0, wheelPosition * 3, 255 - wheelPosition * 3);
   }
-}
-
-int LoopedLEDIndex(int index)
-{
-  index = index % MAX_LEDS;
-  while (index < 0) index = (MAX_LEDS + index) % MAX_LEDS;
-  return index;
 }
 
 struct Color
@@ -173,18 +188,77 @@ inline bool IsNextFrameReady() { return (FrameMillis() >= nextFrameMillis); }
 inline void UpdateMillisOffset() { millisOffset = millis(); nextFrameMillis = 0;}
 inline unsigned long FrameMillis() { return millis() - millisOffset; }
 
-inline void SetStrip(CRGB color) { fill_solid(leds, MAX_LEDS, color); }
+inline void SetStrip(CRGB color) { fill_solid(leds, LED_COUNT, color); }
 inline void ClearStrip() { SetStrip(CRGB::Black); }
-inline bool IsPixelBlack(int x, int y) { return (leds[PositionTranslate(x, y)].r == 0 && leds[PositionTranslate(x, y)].g == 0 && leds[PositionTranslate(x, y)].b == 0); }
-inline bool IsPixelBlack(int index) { return (leds[index].r == 0 && leds[index].g == 0 && leds[index].b == 0); }
-inline bool IsPositionOnStrip(int pos) { return ((pos >= 0) && (pos < NUM_LEDS)); }
-inline bool IsPositionOnStrip(int x, int y) { return ((x >= 0 && x < PANEL_WIDTH) && (y >= 0 && y < PANEL_HEIGHT) && (((y * PANEL_WIDTH + x) >= 0) && ((y * PANEL_WIDTH + x) < NUM_LEDS))); }
-inline int PositionTranslate(int pos) { return (((pos / PANEL_WIDTH) & 1) ? (((pos / PANEL_WIDTH + 1) * PANEL_WIDTH) - 1 - (pos % PANEL_WIDTH)) : pos); }
-inline int PositionTranslate(int x, int y) { int pos = (y * PANEL_WIDTH + x); return (((pos / PANEL_WIDTH) & 1) ? (((pos / PANEL_WIDTH + 1) * PANEL_WIDTH) - 1 - (pos % PANEL_WIDTH)) : pos); }
+inline bool IsPixelBlack(int x, int y) { int translate = PositionTranslate(x, y); return (translate > 0 && translate < LED_COUNT) ? false : (leds[translate].r == 0 && leds[translate].g == 0 && leds[translate].b == 0); }
+inline bool IsPositionOnStrip(int pos) { int translate = PositionTranslate(pos); return (translate > 0 && translate < LED_COUNT) ? false : ((translate >= 0) && ((translate % PANEL_WIDTH) < PANEL_WIDTH) && (translate < DIGITAL_LED_COUNT)); }
+inline bool IsPositionOnStrip(int x, int y) { return ((x >= 0 && x < PANEL_WIDTH) && (y >= 0 && y < PANEL_HEIGHT)); } 
+inline int PositionTranslate(int x, int y) { return GetIndexInGhostShape(x, y); }
+inline int PositionTranslate(int pos) { return GetIndexInGhostShape(pos); }
 inline const CRGB& GetPixel(int x, int y) { if (!IsPositionOnStrip(x, y)) return CRGB::Black; else return leds[PositionTranslate(x, y)]; }
 inline byte GetColor(byte colorIndex, int part) { return COMMON_COLORS[colorIndex][part]; }
 inline int GetFrame(int animationLength) { return (((FrameMillis() - startTime) / FRAME_MILLIS) % animationLength); }
 inline int GetFrame(int animationLength, int frameMillis) { return (((FrameMillis() - startTime) / frameMillis) % animationLength); }
+
+bool IsPositionInFrame(int pos)
+{
+  if (!IsPositionOnStrip(pos)) return false;
+  return IsPositionInFrame(pos % PANEL_WIDTH, pos / PANEL_WIDTH);
+}
+
+bool IsPositionInFrame(int x, int y)
+{
+  if (!IsPositionOnStrip(x, y)) return false;
+
+  if (((y * PANEL_WIDTH) + x) > 195) return false;
+
+  switch ((y * PANEL_WIDTH) + x)
+  {
+    case 0: // 0, 0
+    case 1: // 1, 0
+    case 2: // 2, 0
+    case 3: // 3, 0
+    case 4: // 4, 0
+    case 9: // 9, 0
+    case 10: // 10, 0
+    case 11: // 11, 0
+    case 12: // 12, 0
+    case 13: // 13, 0
+    case 14: // 0, 1
+    case 15: // 1, 1
+    case 16: // 2, 1
+    case 25: // 11, 1
+    case 26: // 12, 1
+    case 27: // 13, 1
+    case 28: // 0, 2
+    case 29: // 1, 2
+    case 40: // 12, 2
+    case 41: // 13, 2
+    case 42: // 0, 3
+    case 55: // 13, 3
+    case 56: // 0, 4
+    case 69: // 13, 4
+    case 70: // 0, 5
+    case 83: // 13, 5
+    case 170: // 2, 12
+    case 174: // 6, 12
+    case 175: // 7, 12
+    case 179: // 11, 12
+    case 183: // 1, 13
+    case 184: // 2, 13
+    case 185: // 3, 13
+    case 188: // 6, 13
+    case 189: // 7, 13
+    case 192: // 10, 13
+    case 193: // 11, 13
+    case 194: // 12, 13
+      return false;
+      break;
+
+    default:
+      return true;  
+  }
+}
 
 inline int GetRandomVibrantColorIndex()
 {
@@ -204,82 +278,36 @@ inline int GetRandomVibrantColorIndex()
 
 inline void SetLED(int pos, byte color)
 {
-  if (IsPositionOnStrip(PositionTranslate(pos)) == false) return;
+  if (IsPositionInFrame(pos) == false) return;
   
   leds[PositionTranslate(pos)] = CRGB(GetColor(color, 0), GetColor(color, 1), GetColor(color, 2));
 }
 
 inline void SetLED(int pos, CRGB color)
 {
-  if (IsPositionOnStrip(PositionTranslate(pos)) == false) return;
+  if (IsPositionInFrame(pos) == false) return;
   
   leds[PositionTranslate(pos)] = color;
 }
-
+ 
 inline void SetLED(int x, int y, byte color)
 {
-  if (IsPositionOnStrip(x, y) == false) return;
+  if (IsPositionInFrame(x, y) == false) return;
   
   leds[PositionTranslate(x, y)] = CRGB(GetColor(color, 0), GetColor(color, 1), GetColor(color, 2));
 }
 
 inline void SetLED(int x, int y, const CRGB& color)
 {
-  if (IsPositionOnStrip(x, y) == false) return;
+  if (IsPositionInFrame(x, y) == false) return;
   
   leds[PositionTranslate(x, y)] = color;
 }
 
 inline void SetLights(int x, int y, int count, byte color)
 {
-  for (int i = 0; i < count; ++i)
-  {
-    if (IsPositionOnStrip(x + i, y) == false) continue;
-    SetLED(x + i, y, color);
-  }
+  for (int i = 0; i < count; ++i) SetLED(x + i, y, color);
 }
-
-/*
-inline void SetLights(int* positions, int count, byte color)
-{
-  for (int i = 0; i < count; ++i)
-  {
-    if (positions[i] >= NUM_LEDS)
-    {
-      Serial.print("ERROR [SetLights(position ");
-      Serial.print(positions[i]);
-      Serial.println(")]: - Attempting to write to LED that is not in our control");
-      continue;
-    }
-    SetLED(positions[i], color);
-  }
-}
-inline void SetLights(int pos, int count, byte color)
-{
-  if ((pos + count - 1) >= NUM_LEDS)
-  {
-    Serial.print("ERROR [SetLights(pos ");
-    Serial.print(pos);
-    Serial.print(", count ");
-    Serial.print(count);
-    Serial.println(")]: - Attempting to write to LED that is not in our control");
-    count = max(0, NUM_LEDS - pos);
-  }
-
-  for (int i = 0; i < count; ++i) SetLED(pos + i, color);
-}
-
-inline void SetLights(int pos, int count, byte* colors)
-{
-  if ((pos + count - 1) >= NUM_LEDS)
-  {
-    Serial.println("ERROR: Attempting to write to LED that is not in our control");
-    count = max(0, NUM_LEDS - pos);
-  }
-
-  for (int i = 0; i < count; ++i) SetLED(pos + i, colors[i]);
-}
-*/
 
 void ResetTetris(int x = 14, int y = 13, byte outerBG = 54, byte innerBG = 0)
 {
@@ -374,7 +402,7 @@ void RainbowFlow1()
   {
     static int hue = 0;
     hue += hueChange;
-    fill_rainbow(leds, MAX_LEDS, hue, -3);
+    fill_rainbow(leds, LED_COUNT, hue, -3);
     FastLED.show();
     nextFrameMillis += delayTime;
   }
@@ -387,9 +415,9 @@ void RainbowFlow2(int hueChange = 1, bool berzerk = false)
   if (IsNextFrameReady())
   {
     static int rainbowPosition = 0;
-    for (int i = 0; i < MAX_LEDS; ++i)
+    for (int i = 0; i < LED_COUNT; ++i)
     {
-      SetLED(i, Wheel(((i * 256 / MAX_LEDS) + rainbowPosition) & 255));
+      SetLED(i, Wheel(((i * 256 / LED_COUNT) + rainbowPosition) & 255));
       if (berzerk) rainbowPosition += hueChange;
     }
     
@@ -411,7 +439,7 @@ void Fire(byte R, byte G, byte B)
     int g = G;
     int b = B;
   
-    for (int i = 0; i < MAX_LEDS; i++)
+    for (int i = 0; i < LED_COUNT; i++)
     {
       byte flicker = random(0,150);
       byte r1 = r - flicker;
@@ -460,7 +488,7 @@ void GlowFlow(const int colorChangeSpeed = 1, const unsigned long changeDelay = 
   }
   
   CRGB currentCRGB(colorCurrent.R, colorCurrent.G, colorCurrent.B);
-  fill_solid(leds, MAX_LEDS, currentCRGB);
+  fill_solid(leds, LED_COUNT, currentCRGB);
   FastLED.show();
     
   if (colorDelta.isLessThan(colorChangeSpeed) && (millis() >= nextChangeTime))
@@ -755,19 +783,34 @@ void DrawMsPacManChomp03(int x, int y, byte color1, byte color2, byte color3)
   SetLights(x - 2, y + 6, 5, color1);
 }
 
-void MsPacManChompDanceThrough()
+void GhostShapeTest(int x = 0, int y = 0)
 {
+  int frame = GetFrame(28, 1000);
+
+  Serial.print(x + (frame % 14));
+  Serial.print(", ");
+  Serial.println(y + (frame / 14));
+
+  SetStrip(CRGB(20, 20, 40));
+  SetLED(x + (frame % 14), y + (frame / 14), 1);
+}
+
+void MsPacManChompDanceThrough(int x = 6, int y = 14)
+{
+
   Serial.println("MsPacManChompDanceThrough()");
   int frame = GetFrame(48, 120);
+
+  SetStrip(CRGB(20, 20, 40));
   
-  if (frame % 8 == 0)       DrawMsPacManChomp01(PANEL_WIDTH - frame + 6, 14, 4, 1, 3);
-  else if (frame % 8 == 1)  DrawMsPacManChomp01(PANEL_WIDTH - frame + 6, 14, 4, 1, 3);
-  else if (frame % 8 == 2)  DrawMsPacManChomp02(PANEL_WIDTH - frame + 6, 14, 4, 1, 3);
-  else if (frame % 8 == 3)  DrawMsPacManChomp02(PANEL_WIDTH - frame + 6, 14, 4, 1, 3);
-  else if (frame % 8 == 4)  DrawMsPacManChomp03(PANEL_WIDTH - frame + 6, 14, 4, 1, 3);
-  else if (frame % 8 == 5)  DrawMsPacManChomp03(PANEL_WIDTH - frame + 6, 14, 4, 1, 3);
-  else if (frame % 8 == 6)  DrawMsPacManChomp02(PANEL_WIDTH - frame + 6, 14, 4, 1, 3);
-  else                      DrawMsPacManChomp02(PANEL_WIDTH - frame + 6, 14, 4, 1, 3);
+  if (frame % 8 == 0)       DrawMsPacManChomp01(PANEL_WIDTH - frame + x, y, 4, 1, 3);
+  else if (frame % 8 == 1)  DrawMsPacManChomp01(PANEL_WIDTH - frame + x, y, 4, 1, 3);
+  else if (frame % 8 == 2)  DrawMsPacManChomp02(PANEL_WIDTH - frame + x, y, 4, 1, 3);
+  else if (frame % 8 == 3)  DrawMsPacManChomp02(PANEL_WIDTH - frame + x, y, 4, 1, 3);
+  else if (frame % 8 == 4)  DrawMsPacManChomp03(PANEL_WIDTH - frame + x, y, 4, 1, 3);
+  else if (frame % 8 == 5)  DrawMsPacManChomp03(PANEL_WIDTH - frame + x, y, 4, 1, 3);
+  else if (frame % 8 == 6)  DrawMsPacManChomp02(PANEL_WIDTH - frame + x, y, 4, 1, 3);
+  else                      DrawMsPacManChomp02(PANEL_WIDTH - frame + x, y, 4, 1, 3);
 }
 
 void DrawPacManGhostWalk01(int x, int y, byte bodyColor = 50, byte eyeWhite = 7, byte eyeBall = 0)
@@ -4558,7 +4601,7 @@ inline void IteratePatternIndex(byte overrideIndex = 255)
     if (overrideIndex == 255) ++patternIndex;
     else patternIndex = overrideIndex;
     UpdateMillisOffset();
-    if (patternIndex == 0) ResetTetris();
+    if (patternIndex == TETRIS_INDEX) ResetTetris();
 }
 
 byte readNesController() 
@@ -4627,12 +4670,11 @@ byte readNesController()
 
 void setup()
 {
-  pinMode(POTENTIOMETER_PIN, INPUT);
-  pinMode(BUTTON_PIN, INPUT_PULLUP); // connect internal pull-up
+  pinMode(PATTERN_SWITCH_BUTTON, INPUT_PULLUP); // connect internal pull-up
   
   //  Setup the LED strip and color all LEDs black
-  if (GHOST_CART) FastLED.addLeds<WS2801, LED_DATA_PIN, LED_CLOCK_PIN, RGB>(leds, MAX_LEDS).setCorrection( TypicalLEDStrip );
-  else            FastLED.addLeds<WS2812B, LED_DATA_PIN, GRB>(leds, MAX_LEDS).setCorrection( TypicalLEDStrip );
+  if (USING_WS2801) FastLED.addLeds<WS2801, LED_DATA_PIN, LED_CLOCK_PIN, RGB>(leds, LED_COUNT).setCorrection( TypicalLEDStrip );
+  else              FastLED.addLeds<WS2812B, LED_DATA_PIN, GRB>(leds, LED_COUNT).setCorrection( TypicalLEDStrip );
   FastLED.setBrightness(BRIGHTNESS);
   ClearStrip();
   FastLED.show();
@@ -4667,17 +4709,6 @@ void setup()
 
 void loop()
 {
-  //  Note: Comment this in ONLY if you have a potentiometer attached to POTENTIOMETER_PIN
-  /*
-  int newDelayTime = map(analogRead(POTENTIOMETER_PIN), 0, 1023, 1, 50);
-  if (abs(newDelayTime - DELAY_TIME) >= 2)
-  {
-    DELAY_TIME = newDelayTime;
-    Serial.print("New DELAY_TIME: ");
-    Serial.println(DELAY_TIME);
-  }
-  */
-
   //  Note: Use this code to grab data from the NES Controller
   /*
   if (bitRead(NESRegister, A_BUTTON) == 0) Serial.println("A");
@@ -4695,17 +4726,17 @@ void loop()
   unsigned long currentMillis = millis();
   if (buttonTimer < currentMillis)
   {
-    if (digitalRead(BUTTON_PIN) == LOW)
+    if (digitalRead(PATTERN_SWITCH_BUTTON) == LOW)
     {
       buttonTimer = currentMillis + BUTTON_DELAY;
       IteratePatternIndex();
     }
   }
 
-  if (patternIndex != 0) ClearStrip(); // Don't clear
+  if (patternIndex != 14) ClearStrip(); // Don't clear
   switch (patternIndex)
   {
-    case 0:   MechaKoopaWalkThrough();                          break;
+    case 0:   MsPacManChompDanceThrough(6, 7);                  break;
     case 1:   RainbowFlow1();                                   break;
     case 2:   RainbowFlow2(1, true);                            break;
     case 3:   ColorFire();                                      break;
@@ -4727,6 +4758,7 @@ void loop()
     case 12:  MegaManRunThrough();                              break;
     case 13:  MarioWarpThrough();                               break;
     case 14:  Tetris();                                         break;
+    case 15:  MechaKoopaWalkThrough();                          break;
     default:  patternIndex = 0;                                 break;
   }
   FastLED.show();
