@@ -1,15 +1,5 @@
 /*
 ================================================================================
-
-    File........... NES Controller Test Code
-    Purpose........ To demonstrate how to interface to an NES controller
-    Author......... Joseph Corleto
-    E-mail......... corleto.joseph @ gmail.com
-    Started........ 04/13/2016
-    Finished....... 04/14/2016
-    Updated........ --/--/----
- 
-================================================================================
    Notes
 ================================================================================
 - The NES controller contains one 8-bit 4021 shift register inside. 
@@ -59,8 +49,6 @@
   |           |   6 - No Connection
   | 5 O   O 4 |   7 - +5V
   |___________|
-
-- Please visit http://www.allaboutcircuits.com to search for complete article!
 */
 
 #define A_BUTTON                0
