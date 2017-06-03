@@ -61,180 +61,150 @@
   |___________|
 
 - Please visit http://www.allaboutcircuits.com to search for complete article!
-
-================================================================================
-  Updates
-================================================================================
 */
 
-//===============================================================================
-//  Header Files
-//===============================================================================
+#define A_BUTTON                0
+#define B_BUTTON                1
+#define SELECT_BUTTON           2
+#define START_BUTTON            3
+#define UP_BUTTON               4
+#define DOWN_BUTTON             5
+#define LEFT_BUTTON             6
+#define RIGHT_BUTTON            7
 
-//===============================================================================
-//  Constants
-//===============================================================================
-// Here we have a bunch of constants that will become clearer when we look at the
-// readNesController() function. Basically, we will use these contents to clear
-// a bit. These are chosen according to the table above.
-const int A_BUTTON         = 0;
-const int B_BUTTON         = 1;
-const int SELECT_BUTTON    = 2;
-const int START_BUTTON     = 3;
-const int UP_BUTTON        = 4;
-const int DOWN_BUTTON      = 5;
-const int LEFT_BUTTON      = 6;
-const int RIGHT_BUTTON     = 7;
+#define NES_DATA_PIN            6
+#define NES_CLOCK_PIN           4
+#define NES_LATCH_PIN           5
 
-//===============================================================================
-//  Variables
-//===============================================================================
-byte nesRegister  = 0;    // We will use this to hold current button states
+byte NESRegister = 0; //  We will use this to hold current button states
 
-//===============================================================================
-//  Pin Declarations
-//===============================================================================
-//Inputs:
-int nesData       = 6;    // The data pin for the NES controller
-
-//Outputs:
-int nesClock      = 4;    // The clock pin for the NES controller
-int nesLatch      = 5;    // The latch pin for the NES controller
-
-//===============================================================================
-//  Initialization
-//===============================================================================
-void setup() 
+void NES_Controller_Test()
 {
-  // Initialize serial port speed for the serial terminal
-  Serial.begin(9600);
-  
-  // Set appropriate pins to inputs
-  pinMode(nesData, INPUT);
-  
-  // Set appropriate pins to outputs
-  pinMode(nesClock, OUTPUT);
-  pinMode(nesLatch, OUTPUT);
-  
-  // Set initial states
-  digitalWrite(nesClock, LOW);
-  digitalWrite(nesLatch, LOW);
+    //  Move left or right if the controller is polled with LEFT or RIGHT input
+    if (bitRead(NESRegister, LEFT_BUTTON) == 0)
+    {
+      Serial.println("LEFT");
+    }
+    else if (bitRead(NESRegister, RIGHT_BUTTON) == 0)
+    {
+      Serial.println("RIGHT");
+    }
+    if (bitRead(NESRegister, UP_BUTTON) == 0)
+    {
+      Serial.println("UP");
+    }
+    if (bitRead(NESRegister, DOWN_BUTTON) == 0)
+    {
+      Serial.println("DOWN");
+    }
+    if (bitRead(NESRegister, DOWN_BUTTON) == 0)
+    {
+      Serial.println("DOWN");
+    }
+    if (bitRead(NESRegister, A_BUTTON) == 0)
+    {
+      Serial.println("A");
+    }
+    if (bitRead(NESRegister, B_BUTTON) == 0)
+    {
+      Serial.println("B");
+    }
+    if (bitRead(NESRegister, START_BUTTON) == 0)
+    {
+      Serial.println("START");
+    }
+    if (bitRead(NESRegister, SELECT_BUTTON) == 0)
+    {
+      Serial.println("SELECT");
+    }
 }
 
-//===============================================================================
-//  Main
-//===============================================================================
-void loop() 
-{
-  // This function call will return the states of all NES controller's register
-  // in a nice 8 bit variable format. Remember to refer to the table and
-  // constants above for which button maps where!
-  nesRegister = readNesController();
-  
-  // Slight delay before we debug what was pressed so we don't spam the
-  // serial monitor.
-  delay(180);
-  
-  // To give you an idea on how to use this data to control things for your
-  // next project, look through the serial terminal code below. Basically,
-  // just choose a bit to look at and decide what to do whether HIGH (not pushed)
-  // or LOW (pushed). What is nice about this test code is that we mapped all
-  // of the bits to the actual button name so no useless memorizing!
-  if (bitRead(nesRegister, A_BUTTON) == 0)
-    Serial.println("JUMP!");
-    
-  if (bitRead(nesRegister, B_BUTTON) == 0)
-    Serial.println("PUNCH!");
-    
-  if (bitRead(nesRegister, START_BUTTON) == 0)
-    Serial.println("DOOMSDAY ACTIVATED");
-  
-  if (bitRead(nesRegister, SELECT_BUTTON) == 0)
-    Serial.println("WHY DON'T YOU MAP SOMETHING HERE?");
-    
-  if (bitRead(nesRegister, UP_BUTTON) == 0)
-    Serial.println("...OR HERE?");
-    
-  if (bitRead(nesRegister, DOWN_BUTTON) == 0)
-    Serial.println("PLAY WITH THE CODE ALREADY!");
-    
-  if (bitRead(nesRegister, LEFT_BUTTON) == 0)
-    Serial.println("MAKE SOMETHING WITH THIS!");  
-  
-  if (bitRead(nesRegister, RIGHT_BUTTON) == 0)
-    Serial.println("GOOD LUCK WITH YOUR PROJECT ");
-}
-
-//===============================================================================
-//  Functions
-//===============================================================================
-///////////////////////
-// readNesController //
-///////////////////////
 byte readNesController() 
 {  
   // Pre-load a variable with all 1's which assumes all buttons are not
   // pressed. But while we cycle through the bits, if we detect a LOW, which is
   // a 0, we clear that bit. In the end, we find all the buttons states at once.
-  int tempData = 255;
+  NESRegister = 255;
     
-  // Quickly pulse the nesLatch pin so that the register grab what it see on
+  // Quickly pulse the NES_LATCH_PIN pin so that the register grab what it see on
   // its parallel data pins.
-  digitalWrite(nesLatch, HIGH);
-  digitalWrite(nesLatch, LOW);
+  digitalWrite(NES_LATCH_PIN, HIGH);
+  digitalWrite(NES_LATCH_PIN, LOW);
  
   // Upon latching, the first bit is available to look at, which is the state
   // of the A button. We see if it is low, and if it is, we clear out variable's
   // first bit to indicate this is so.
-  if (digitalRead(nesData) == LOW)
-    bitClear(tempData, A_BUTTON);
+  if (digitalRead(NES_DATA_PIN) == LOW)
+    bitClear(NESRegister, A_BUTTON);
     
   // Clock the next bit which is the B button and determine its state just like
   // we did above.
-  digitalWrite(nesClock, HIGH);
-  digitalWrite(nesClock, LOW);
-  if (digitalRead(nesData) == LOW)
-    bitClear(tempData, B_BUTTON);
+  digitalWrite(NES_CLOCK_PIN, HIGH);
+  digitalWrite(NES_CLOCK_PIN, LOW);
+  if (digitalRead(NES_DATA_PIN) == LOW)
+    bitClear(NESRegister, B_BUTTON);
   
   // Now do this for the rest of them!
   
   // Select button
-  digitalWrite(nesClock, HIGH);
-  digitalWrite(nesClock, LOW);
-  if (digitalRead(nesData) == LOW)
-    bitClear(tempData, SELECT_BUTTON);
+  digitalWrite(NES_CLOCK_PIN, HIGH);
+  digitalWrite(NES_CLOCK_PIN, LOW);
+  if (digitalRead(NES_DATA_PIN) == LOW)
+    bitClear(NESRegister, SELECT_BUTTON);
 
   // Start button
-  digitalWrite(nesClock, HIGH);
-  digitalWrite(nesClock, LOW);
-  if (digitalRead(nesData) == LOW)
-    bitClear(tempData, START_BUTTON);
+  digitalWrite(NES_CLOCK_PIN, HIGH);
+  digitalWrite(NES_CLOCK_PIN, LOW);
+  if (digitalRead(NES_DATA_PIN) == LOW)
+    bitClear(NESRegister, START_BUTTON);
 
   // Up button
-  digitalWrite(nesClock, HIGH);
-  digitalWrite(nesClock, LOW);
-  if (digitalRead(nesData) == LOW)
-    bitClear(tempData, UP_BUTTON);
+  digitalWrite(NES_CLOCK_PIN, HIGH);
+  digitalWrite(NES_CLOCK_PIN, LOW);
+  if (digitalRead(NES_DATA_PIN) == LOW)
+    bitClear(NESRegister, UP_BUTTON);
     
   // Down button
-  digitalWrite(nesClock, HIGH);
-  digitalWrite(nesClock, LOW);
-  if (digitalRead(nesData) == LOW)
-    bitClear(tempData, DOWN_BUTTON);
+  digitalWrite(NES_CLOCK_PIN, HIGH);
+  digitalWrite(NES_CLOCK_PIN, LOW);
+  if (digitalRead(NES_DATA_PIN) == LOW)
+    bitClear(NESRegister, DOWN_BUTTON);
 
   // Left button
-  digitalWrite(nesClock, HIGH);
-  digitalWrite(nesClock, LOW);
-  if (digitalRead(nesData) == LOW)
-    bitClear(tempData, LEFT_BUTTON);  
+  digitalWrite(NES_CLOCK_PIN, HIGH);
+  digitalWrite(NES_CLOCK_PIN, LOW);
+  if (digitalRead(NES_DATA_PIN) == LOW)
+    bitClear(NESRegister, LEFT_BUTTON);  
     
   // Right button
-  digitalWrite(nesClock, HIGH);
-  digitalWrite(nesClock, LOW);
-  if (digitalRead(nesData) == LOW)
-    bitClear(tempData, RIGHT_BUTTON);
-    
-  // After all of this, we now have our variable all bundled up
-  // with all of the NES button states.*/
-  return tempData;
+  digitalWrite(NES_CLOCK_PIN, HIGH);
+  digitalWrite(NES_CLOCK_PIN, LOW);
+  if (digitalRead(NES_DATA_PIN) == LOW)
+    bitClear(NESRegister, RIGHT_BUTTON);
+}
+
+void setup()
+{
+  //  NES CONTROLLER CODE
+  // Set appropriate pins to inputs
+  pinMode(NES_DATA_PIN, INPUT);
+  
+  // Set appropriate pins to outputs
+  pinMode(NES_CLOCK_PIN, OUTPUT);
+  pinMode(NES_LATCH_PIN, OUTPUT);
+  
+  // Set initial states
+  digitalWrite(NES_CLOCK_PIN, LOW);
+  digitalWrite(NES_LATCH_PIN, LOW);
+  //  NES CONTROLLER CODE
+
+  Serial.begin(9600);
+  while (!Serial) { ; }
+  Serial.println("Program START!");
+}
+
+void loop()
+{
+  readNesController();
+  NES_Controller_Test();
 }
