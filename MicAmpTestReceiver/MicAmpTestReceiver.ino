@@ -1,8 +1,4 @@
-// Chapter 7 - Communications
-// I2C Slave
-// By Cornel Amariei for Packt Publishing
 
-// Include the required Wire library for I2C
 #include <Wire.h>
 
 int x = 0;

@@ -1,3 +1,4 @@
+#include <Wire.h>
 #include <FastLED.h>
 
 #define LED_DATA_PIN            2         //  The WS2801 string data pin
@@ -39,6 +40,8 @@ unsigned long buttonTimer = 0;
 unsigned long millisOffset = 0;
 unsigned long nextFrameMillis = 0;
 byte patternIndex = 0;
+
+byte soundLevel = 0;
 
 //  Generic values
 #define FRAME_MILLIS            333
@@ -309,6 +312,11 @@ inline void SetLights(int x, int y, int count, byte color)
   for (int i = 0; i < count; ++i) SetLED(x + i, y, color);
 }
 
+inline void SetLights(int x, int y, int count, const CRGB& color)
+{
+  for (int i = 0; i < count; ++i) SetLED(x + i, y, color);
+}
+
 void ResetTetris(int x = 14, int y = 13, byte outerBG = 54, byte innerBG = 0)
 {
   SetLights(x - 14, y - 13, 28, outerBG); // START ROW -13
@@ -510,7 +518,6 @@ void GlowFlow(const int colorChangeSpeed = 1, const unsigned long changeDelay = 
 
 void TestAnimation()
 {
-  Serial.println("TestAnimation()");
   int frame = GetFrame(2);
   for (int i = 0; i < PANEL_HEIGHT; ++i)
     for (int j = 0; j < PANEL_WIDTH / 2; ++j)
@@ -618,7 +625,6 @@ void DrawPacManChomp03(int x, int y, byte color)
 
 void PacManChompDanceThrough(int x = -6, int y = 14, int frameLength = 46, int animationTime = 100)
 {
-  Serial.println("PacManChompDanceThrough()");
   int frame = GetFrame(frameLength, animationTime);
   
   if (frame % 8 == 0)       DrawPacManChomp01(frame + x, y, 4);
@@ -787,18 +793,12 @@ void GhostShapeTest(int x = 0, int y = 0)
 {
   int frame = GetFrame(28, 1000);
 
-  Serial.print(x + (frame % 14));
-  Serial.print(", ");
-  Serial.println(y + (frame / 14));
-
   SetStrip(CRGB(20, 20, 40));
   SetLED(x + (frame % 14), y + (frame / 14), 1);
 }
 
 void MsPacManChompDanceThrough(int x = 6, int y = 14)
 {
-
-  Serial.println("MsPacManChompDanceThrough()");
   int frame = GetFrame(48, 120);
 
   SetStrip(CRGB(20, 20, 40));
@@ -811,6 +811,62 @@ void MsPacManChompDanceThrough(int x = 6, int y = 14)
   else if (frame % 8 == 5)  DrawMsPacManChomp03(PANEL_WIDTH - frame + x, y, 4, 1, 3);
   else if (frame % 8 == 6)  DrawMsPacManChomp02(PANEL_WIDTH - frame + x, y, 4, 1, 3);
   else                      DrawMsPacManChomp02(PANEL_WIDTH - frame + x, y, 4, 1, 3);
+}
+
+void SoundReact()
+{
+  byte soundLevelAltered = (soundLevel / 25) * 25;
+  if (soundLevelAltered < 40) soundLevelAltered = 0;
+  Serial.println(soundLevelAltered);
+  
+  CRGB soundColor = Wheel(soundLevelAltered);
+  int x = 7;
+  int y = 7;
+  int eyeWhite = 7;
+  int eyeBall = 0;
+  
+  SetLights(x - 2, y - 7, 4, soundColor); // START ROW -7
+  SetLights(x - 4, y - 6, 8, soundColor); // START ROW -6
+  SetLights(x - 5, y - 5, 10, soundColor); // START ROW -5
+  SetLights(x - 6, y - 4, 3, soundColor); // START ROW -4
+  SetLights(x - 3, y - 4, 2, eyeWhite);
+  SetLights(x - 1, y - 4, 4, soundColor);
+  SetLights(x + 3, y - 4, 2, eyeWhite);
+  SetLED(x + 5, y - 4, soundColor);
+  SetLights(x - 6, y - 3, 2, soundColor); // START ROW -3
+  SetLights(x - 4, y - 3, 4, eyeWhite);
+  SetLights(x + 0, y - 3, 2, soundColor);
+  SetLights(x + 2, y - 3, 4, eyeWhite);
+  SetLights(x - 6, y - 2, 2, soundColor); // START ROW -2
+  SetLights(x - 4, y - 2, 2, eyeWhite);
+  SetLights(x - 2, y - 2, 2, eyeBall);
+  SetLights(x + 0, y - 2, 2, soundColor);
+  SetLights(x + 2, y - 2, 2, eyeWhite);
+  SetLights(x + 4, y - 2, 2, eyeBall);
+  SetLights(x - 7, y - 1, 3, soundColor); // START ROW -1
+  SetLights(x - 4, y - 1, 2, eyeWhite);
+  SetLights(x - 2, y - 1, 2, eyeBall);
+  SetLights(x + 0, y - 1, 2, soundColor);
+  SetLights(x + 2, y - 1, 2, eyeWhite);
+  SetLights(x + 4, y - 1, 2, eyeBall);
+  SetLED(x + 6, y - 1, soundColor);
+  SetLights(x - 7, y + 0, 4, soundColor); // START ROW +0
+  SetLights(x - 3, y + 0, 2, eyeWhite);
+  SetLights(x - 1, y + 0, 4, soundColor);
+  SetLights(x + 3, y + 0, 2, eyeWhite);
+  SetLights(x + 5, y + 0, 2, soundColor);
+  SetLights(x - 7, y + 1, 14, soundColor); // START ROW +1
+  SetLights(x - 7, y + 2, 14, soundColor); // START ROW +2
+  SetLights(x - 7, y + 3, 14, soundColor); // START ROW +3
+  SetLights(x - 7, y + 4, 14, soundColor); // START ROW +4
+  SetLights(x - 7, y + 5, 2, soundColor); // START ROW +5
+  SetLights(x - 4, y + 5, 3, soundColor);
+  SetLights(x + 1, y + 5, 3, soundColor);
+  SetLights(x + 5, y + 5, 2, soundColor);
+  SetLED(x - 7, y + 6, soundColor); // START ROW +6
+  SetLights(x - 3, y + 6, 2, soundColor);
+  SetLights(x + 1, y + 6, 2, soundColor);
+  SetLED(x + 6, y + 6, soundColor);
 }
 
 void DrawPacManGhostWalk01(int x, int y, byte bodyColor = 50, byte eyeWhite = 7, byte eyeBall = 0)
@@ -905,7 +961,6 @@ void DrawPacManGhostWalk02(int x, int y, byte bodyColor = 50, byte eyeWhite = 7,
 
 void PacManGhostDanceThrough(int x = 6, int y = 14, int frameLength = 48, int body = 50, int eyeWhite = 7, int eyeBall = 0, int animationTime = 100)
 {
-  Serial.println("PacManGhostDanceThrough()");
   int frame = GetFrame(frameLength, animationTime);
   
   if (frame % 4 == 0)       DrawPacManGhostWalk01(frame + x, y, body, eyeWhite, eyeBall);
@@ -989,7 +1044,6 @@ void DrawSpaceInvader02(int x, int y, byte color1 = 7, byte color2 = 7)
 
 void SpaceInvaderDanceThrough(byte color1 = 7, byte color2 = 7)
 {
-  Serial.println("SpaceInvaderDanceThrough()");
   int frame = GetFrame(40);
   
   if (frame & 1)  DrawSpaceInvader01(frame - 6, 14, color1, color2);
@@ -998,7 +1052,6 @@ void SpaceInvaderDanceThrough(byte color1 = 7, byte color2 = 7)
 
 void ThreeSpaceInvaderDanceThrough(byte color1a = 7, byte color1b = 7, byte color2a = 7, byte color2b = 7, byte color3a = 7, byte color3b = 7)
 {
-  Serial.println("ThreeSpaceInvaderDanceThrough()");
   int frame = GetFrame(40);
   
   if (frame & 1)
@@ -1495,7 +1548,6 @@ void DrawMegaManRun03(int x, int y, byte outline, byte body1, byte body2, byte s
 
 void MegaManRunThrough()
 {
-  Serial.println("MegaManRunThrough()");
   int frame = GetFrame(52, 90);
 
   SetStrip(CRGB(GetColor(8, 0), GetColor(8, 1), GetColor(8, 2)));
@@ -3367,7 +3419,6 @@ void DrawMarioWarp10(int x, int y, byte outline = 0, byte hardhat1 = 41, byte ha
 
 void MarioWarpThrough()
 {
-  Serial.println("MarioWarpThrough()");
   int frame = GetFrame(56, 200);
   int frameIndex = (frame % 40) / 4;
   static int framePrint = -1;
@@ -4337,7 +4388,6 @@ void MechaKoopaWalk04(int x, int y, byte outline = 0, byte eyesAndTeeth = 7, byt
 
 void MechaKoopaWalkThrough()
 {
-  Serial.println("MechaKoopaWalkThrough()");
   int frame = GetFrame(56, 160);
   int frameIndex = frame % 4;
   static int framePrint = -1;
@@ -4668,6 +4718,10 @@ byte readNesController()
     bitClear(NESRegister, RIGHT_BUTTON);
 }
 
+void receiveEvent(int bytes) {
+  soundLevel = Wire.read();    // read one character from the I2C
+}
+
 void setup()
 {
   pinMode(PATTERN_SWITCH_BUTTON, INPUT_PULLUP); // connect internal pull-up
@@ -4681,6 +4735,11 @@ void setup()
   
   //  Seed the random number generator
   randomSeed(analogRead(0));
+
+  // Start the I2C Bus as Slave on address 9
+  Wire.begin(9); 
+  // Attach a function to trigger when something is received.
+  Wire.onReceive(receiveEvent);
   
   //  Set the button timer to the current time
   buttonTimer = millis();
@@ -4709,18 +4768,6 @@ void setup()
 
 void loop()
 {
-  //  Note: Use this code to grab data from the NES Controller
-  /*
-  if (bitRead(NESRegister, A_BUTTON) == 0) Serial.println("A");
-  if (bitRead(NESRegister, B_BUTTON) == 0) Serial.println("B");
-  if (bitRead(NESRegister, START_BUTTON) == 0) Serial.println("START");
-  if (bitRead(NESRegister, SELECT_BUTTON) == 0) Serial.println("SELECT");
-  if (bitRead(NESRegister, UP_BUTTON) == 0) Serial.println("UP");
-  if (bitRead(NESRegister, DOWN_BUTTON) == 0) Serial.println("DOWN");
-  if (bitRead(NESRegister, LEFT_BUTTON) == 0) Serial.println("LEFT");  
-  if (bitRead(NESRegister, RIGHT_BUTTON) == 0) Serial.println("RIGHT");
-   */
-  
   readNesController();
   
   unsigned long currentMillis = millis();
@@ -4736,7 +4783,7 @@ void loop()
   if (patternIndex != 14) ClearStrip(); // Don't clear
   switch (patternIndex)
   {
-    case 0:   MsPacManChompDanceThrough(6, 7);                  break;
+    case 0:   SoundReact();                                     break;
     case 1:   RainbowFlow1();                                   break;
     case 2:   RainbowFlow2(1, true);                            break;
     case 3:   ColorFire();                                      break;
