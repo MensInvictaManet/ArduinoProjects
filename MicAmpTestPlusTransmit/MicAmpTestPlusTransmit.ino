@@ -1,11 +1,18 @@
-#define WIRE_ENABLED 0
+#define WIRE_ENABLED 1
 #define DEBUG_OUTPUT 1
 
 #if WIRE_ENABLED
   #include <Wire.h>
 #endif
- 
-const int sampleWindow = 10; // Sample window width in mS (50 mS = 20Hz)
+
+int lastState = -1;
+int currState = 0;
+#define STATIC_SCREEN_CHECK(state) if ((currState = state) == lastState) return; else lastState = currState;
+
+#define SOUND_IGNORE_MAX 50
+
+byte soundRating = 0; 
+const int sampleWindow = 15; // Sample window width in mS (50 mS = 20Hz)
 unsigned int sample;
  
 void setup() 
@@ -43,13 +50,12 @@ void loop()
     }
   }
   peakToPeak = signalMax - signalMin;  // max - min = peak-peak amplitude
-  byte soundRating = max(min(byte(double(peakToPeak) / 4), 255), 0);
+  soundRating = max(min(byte(double(peakToPeak) / 4), 255), 0);
+  if (soundRating < SOUND_IGNORE_MAX) soundRating = 0; //  Throw out anything too low to register
+  STATIC_SCREEN_CHECK(soundRating); //  Don't continue if nothing has changed
 
 #if DEBUG_OUTPUT
-  //  NOTE: Debug data to show a more rounded output (which will be done on the other side, so we send the original)
-  byte soundLevelAltered = (soundRating / 25) * 25;
-  if (soundLevelAltered < 40) soundLevelAltered = 0;
-  Serial.println(soundLevelAltered);
+  Serial.println(soundRating);
 #endif
 
 #if WIRE_ENABLED
@@ -57,4 +63,6 @@ void loop()
   Wire.write(soundRating);    // sends soundRating
   Wire.endTransmission();     // stop transmitting
 #endif
+
+
 }

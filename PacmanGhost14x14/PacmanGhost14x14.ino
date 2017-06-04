@@ -35,6 +35,7 @@
 
 byte NESRegister = 0; //  We will use this to hold current button states
 
+unsigned long currentMillis = 0;
 unsigned long startTime = 0;
 unsigned long buttonTimer = 0;
 unsigned long millisOffset = 0;
@@ -48,6 +49,10 @@ byte soundLevel = 0;
 #define BUTTON_DELAY            400
 
 CRGB leds[LED_COUNT];
+
+int lastState = -1;
+int currState = 0;
+#define STATIC_SCREEN_CHECK(state) if ((currState = state) == lastState) return; else lastState = currState;
 
 //////////////////////////////
 //  HELPER FUNCTIONS
@@ -120,7 +125,7 @@ public:
 };
 
 //  The basic colors
-#define COMMON_COLOR_COUNT    61
+#define COMMON_COLOR_COUNT    62
 const byte COMMON_COLORS[COMMON_COLOR_COUNT][3] = 
 {
   {   0,   0,   0 },  //  Black
@@ -184,6 +189,7 @@ const byte COMMON_COLORS[COMMON_COLOR_COUNT][3] =
   {   0, 184,   0 },  //  MechaKoopa Green 2
   {   0, 248,   0 },  //  MechaKoopa Green 3
   {  48, 112, 128 },  //  MechaKoopa Cyan
+  { 110,   0, 220 },  //  Royal Purple
 };
 
 //  Frame/Animation Helper Functions
@@ -193,8 +199,8 @@ inline unsigned long FrameMillis() { return millis() - millisOffset; }
 
 inline void SetStrip(CRGB color) { fill_solid(leds, LED_COUNT, color); }
 inline void ClearStrip() { SetStrip(CRGB::Black); }
-inline bool IsPixelBlack(int x, int y) { int translate = PositionTranslate(x, y); return (translate > 0 && translate < LED_COUNT) ? false : (leds[translate].r == 0 && leds[translate].g == 0 && leds[translate].b == 0); }
-inline bool IsPositionOnStrip(int pos) { int translate = PositionTranslate(pos); return (translate > 0 && translate < LED_COUNT) ? false : ((translate >= 0) && ((translate % PANEL_WIDTH) < PANEL_WIDTH) && (translate < DIGITAL_LED_COUNT)); }
+inline bool IsPixelBlack(int x, int y) { int translate = PositionTranslate(x, y); return (translate < 0 || translate >= LED_COUNT) ? false : (leds[translate].r == 0 && leds[translate].g == 0 && leds[translate].b == 0); }
+inline bool IsPositionOnStrip(int pos) { int translate = PositionTranslate(pos); return (translate >= 0 && translate < LED_COUNT); }
 inline bool IsPositionOnStrip(int x, int y) { return ((x >= 0 && x < PANEL_WIDTH) && (y >= 0 && y < PANEL_HEIGHT)); } 
 inline int PositionTranslate(int x, int y) { return GetIndexInGhostShape(x, y); }
 inline int PositionTranslate(int pos) { return GetIndexInGhostShape(pos); }
@@ -205,7 +211,6 @@ inline int GetFrame(int animationLength, int frameMillis) { return (((FrameMilli
 
 bool IsPositionInFrame(int pos)
 {
-  if (!IsPositionOnStrip(pos)) return false;
   return IsPositionInFrame(pos % PANEL_WIDTH, pos / PANEL_WIDTH);
 }
 
@@ -274,8 +279,20 @@ inline int GetRandomVibrantColorIndex()
     case 4:   return 5;   break;
     case 5:   return 6;   break;
     case 6:   return 7;   break;
-    case 7:   return 48;   break;
-    case 8:   return 49;   break;
+    case 7:   return 48;  break;
+    case 8:   return 49;  break;
+  }
+}
+
+inline int GetNinjaColorIndex(int& index)
+{
+  switch (index)
+  {
+    case 0:   return 1;             break; // RED
+    case 1:   return 3;             break; // BLUE
+    case 2:   return 4;             break; // ORANGE
+    case 3:   return 61;            break; // ROYAL PURPLE
+    default:  index = 0;  return 1; break;
   }
 }
 
@@ -404,34 +421,48 @@ void ResetTetris(int x = 14, int y = 13, byte outerBG = 54, byte innerBG = 0)
 void RainbowFlow1()
 {
   static int delayTime = 1;
-  static int hueChange = 15;
+  static int hueChange = 2;
 
   if (IsNextFrameReady())
   {
+    if (buttonTimer < currentMillis)
+    {
+      if (bitRead(NESRegister, DOWN_BUTTON) == 0) { hueChange -= 1; if (hueChange < 1)  hueChange = 1;  buttonTimer = currentMillis + BUTTON_DELAY; }
+      if (bitRead(NESRegister, UP_BUTTON) == 0)   { hueChange += 1; if (hueChange > 10) hueChange = 10; buttonTimer = currentMillis + BUTTON_DELAY; }
+    }
+    
     static int hue = 0;
     hue += hueChange;
-    fill_rainbow(leds, LED_COUNT, hue, -3);
+    fill_rainbow(leds, LED_COUNT, hue, -1);
     FastLED.show();
     nextFrameMillis += delayTime;
   }
 }
 
-void RainbowFlow2(int hueChange = 1, bool berzerk = false)
+void RainbowFlow2()
 {
   static int delayTime = 40;
+  static bool berzerk = false;
+  static int hueChange = 5;
   
   if (IsNextFrameReady())
   {
-    static int rainbowPosition = 0;
-    for (int i = 0; i < LED_COUNT; ++i)
+    if (buttonTimer < currentMillis)
     {
-      SetLED(i, Wheel(((i * 256 / LED_COUNT) + rainbowPosition) & 255));
+      if (bitRead(NESRegister, A_BUTTON) == 0)    { berzerk = !berzerk;  buttonTimer = currentMillis + BUTTON_DELAY; }
+      if (bitRead(NESRegister, DOWN_BUTTON) == 0) { hueChange -= 1; if (hueChange < 1)  hueChange = 1;  buttonTimer = currentMillis + BUTTON_DELAY; }
+      if (bitRead(NESRegister, UP_BUTTON) == 0)   { hueChange += 1; if (hueChange > 10) hueChange = 10; buttonTimer = currentMillis + BUTTON_DELAY; }
+    }
+    
+    static int rainbowPosition = 0;
+    for (int i = 0; i < DIGITAL_LED_COUNT; ++i)
+    {
+      SetLED(i, Wheel(((i * 256 / DIGITAL_LED_COUNT) + rainbowPosition) & 255));
       if (berzerk) rainbowPosition += hueChange;
     }
     
     if (!berzerk) rainbowPosition += hueChange;
     FastLED.show();
-    
     nextFrameMillis += delayTime;
   }
 }
@@ -463,15 +494,22 @@ void Fire(byte R, byte G, byte B)
   }
 }
 
-void ColorFire(byte colorChangeSpeed = 5)
+void ColorFire()
 {
+  static byte colorChangeSpeed = 5;
   static byte R = random(0, 256);
   static byte G = random(0, 256);
   static byte B = random(0, 256);
+  
+  if (buttonTimer < currentMillis)
+  {
+    if (bitRead(NESRegister, DOWN_BUTTON) == 0) { colorChangeSpeed -= 1; if (colorChangeSpeed < 1)  colorChangeSpeed = 1;  buttonTimer = currentMillis + BUTTON_DELAY; }
+    if (bitRead(NESRegister, UP_BUTTON) == 0)   { colorChangeSpeed += 1; if (colorChangeSpeed > 10) colorChangeSpeed = 10; buttonTimer = currentMillis + BUTTON_DELAY; }
+  }
     
-  R += random(1, (colorChangeSpeed + 1) * 1);
+  R += random(1, (colorChangeSpeed + 1) * 2);
   G += random(1, (colorChangeSpeed + 1) * 2);
-  B += random(1, (colorChangeSpeed + 1) * 3);
+  B += random(1, (colorChangeSpeed + 1) * 2);
 
   Fire(R, G, B);
 }
@@ -800,8 +838,6 @@ void GhostShapeTest(int x = 0, int y = 0)
 void MsPacManChompDanceThrough(int x = 6, int y = 14)
 {
   int frame = GetFrame(48, 120);
-
-  SetStrip(CRGB(20, 20, 40));
   
   if (frame % 8 == 0)       DrawMsPacManChomp01(PANEL_WIDTH - frame + x, y, 4, 1, 3);
   else if (frame % 8 == 1)  DrawMsPacManChomp01(PANEL_WIDTH - frame + x, y, 4, 1, 3);
@@ -815,8 +851,12 @@ void MsPacManChompDanceThrough(int x = 6, int y = 14)
 
 void SoundReact()
 {
-  byte soundLevelAltered = (soundLevel / 25) * 25;
-  if (soundLevelAltered < 40) soundLevelAltered = 0;
+  const int minSoundReactLevel = 50;
+  byte soundLevelAltered = soundLevel > minSoundReactLevel ? ((((soundLevel / 25) * 25) - minSoundReactLevel) / 3) + minSoundReactLevel : soundLevel;
+  if (soundLevelAltered < minSoundReactLevel) soundLevelAltered = 0;
+
+  //  Don't update the screen if nothing has changed
+  STATIC_SCREEN_CHECK(soundLevelAltered);
   Serial.println(soundLevelAltered);
   
   CRGB soundColor = Wheel(soundLevelAltered);
@@ -825,6 +865,7 @@ void SoundReact()
   int eyeWhite = 7;
   int eyeBall = 0;
   
+  ClearStrip();
   SetLights(x - 2, y - 7, 4, soundColor); // START ROW -7
   SetLights(x - 4, y - 6, 8, soundColor); // START ROW -6
   SetLights(x - 5, y - 5, 10, soundColor); // START ROW -5
@@ -867,6 +908,8 @@ void SoundReact()
   SetLights(x - 3, y + 6, 2, soundColor);
   SetLights(x + 1, y + 6, 2, soundColor);
   SetLED(x + 6, y + 6, soundColor);
+  
+  FastLED.show();
 }
 
 void DrawPacManGhostWalk01(int x, int y, byte bodyColor = 50, byte eyeWhite = 7, byte eyeBall = 0)
@@ -969,13 +1012,16 @@ void PacManGhostDanceThrough(int x = 6, int y = 14, int frameLength = 48, int bo
   else if (frame % 4 == 3)  DrawPacManGhostWalk02(frame + x, y, body, eyeWhite, eyeBall);
 }
 
-void PacManChompDanceThroughPlusGhost()
+void PacManChompDanceThroughPlusGhost(int x = -6, int y = 14)
 {
-  PacManChompDanceThrough(-6, 14, 120);
-  PacManGhostDanceThrough(-26, 14, 120, 50, 7, 0);
-  PacManGhostDanceThrough(-46, 14, 120, 51, 7, 0);
-  PacManGhostDanceThrough(-66, 14, 120, 52, 7, 0);
-  PacManGhostDanceThrough(-86, 14, 120, 53, 7, 0);
+  ClearStrip();
+  PacManChompDanceThrough(x -  0, y, 120);
+  PacManGhostDanceThrough(x - 20, y, 120, 50, 7, 0);
+  PacManGhostDanceThrough(x - 40, y, 120, 51, 7, 0);
+  PacManGhostDanceThrough(x - 60, y, 120, 52, 7, 0);
+  PacManGhostDanceThrough(x - 80, y, 120, 53, 7, 0);
+
+  FastLED.show();
 }
 
 void DrawSpaceInvader01(int x, int y, byte color1 = 7, byte color2 = 7)
@@ -1042,12 +1088,39 @@ void DrawSpaceInvader02(int x, int y, byte color1 = 7, byte color2 = 7)
   SetLED(x + 4, y + 3, color1);
 }
 
-void SpaceInvaderDanceThrough(byte color1 = 7, byte color2 = 7)
+void SpaceInvaderDanceThrough(int x = -6, int y = 14, byte color1 = 7, byte color2 = 7)
 {
   int frame = GetFrame(40);
   
-  if (frame & 1)  DrawSpaceInvader01(frame - 6, 14, color1, color2);
-  else            DrawSpaceInvader02(frame - 6, 14, color1, color2);
+  static bool berzerk = false;
+  static bool ninja_turtle = false;
+  static int ninja_turtle_color = 0;
+  static int ninja_turtle_color_index = 0;
+  static int berzerkTimer = 0;
+  static byte berzerkColor = color1;
+  
+  static byte R = random(0, 256);
+  static byte G = random(0, 256);
+  static byte B = random(0, 256);
+  
+  if (buttonTimer < currentMillis)
+  {
+    if (bitRead(NESRegister, A_BUTTON) == 0) { berzerk = !berzerk;  buttonTimer = currentMillis + BUTTON_DELAY; }
+    if (bitRead(NESRegister, B_BUTTON) == 0) { ninja_turtle = !ninja_turtle; if (ninja_turtle) { ninja_turtle_color = GetNinjaColorIndex(ninja_turtle_color_index); ninja_turtle_color_index++; } buttonTimer = currentMillis + BUTTON_DELAY; }
+  }
+
+  if (berzerk)
+  {
+      color1 = color2 = berzerkColor;
+    if (berzerkTimer < currentMillis)
+    {
+        berzerkColor = GetRandomVibrantColorIndex();
+        berzerkTimer = currentMillis + 50;
+    }
+  }
+  
+  if (frame & 1)  DrawSpaceInvader01(x + frame, y, ninja_turtle ? 2 : color1, ninja_turtle ? ninja_turtle_color : color2);
+  else            DrawSpaceInvader02(x + frame, y, ninja_turtle ? 2 : color1, ninja_turtle ? ninja_turtle_color : color2);
 }
 
 void ThreeSpaceInvaderDanceThrough(byte color1a = 7, byte color1b = 7, byte color2a = 7, byte color2b = 7, byte color3a = 7, byte color3b = 7)
@@ -1066,6 +1139,8 @@ void ThreeSpaceInvaderDanceThrough(byte color1a = 7, byte color1b = 7, byte colo
     DrawSpaceInvader02(frame - 6, 14, color2a, color2b);
     DrawSpaceInvader02(PANEL_WIDTH - frame + 6, 24, color3a, color3b);
   }
+
+  FastLED.show();
 }
 
 void DrawMegaManRun01(int x, int y, byte outline, byte body1, byte body2, byte skin, byte eyes)
@@ -4643,6 +4718,8 @@ void Tetris()
     }
     nextFrameMillis += 250;
   }
+
+  FastLED.show();
 }
 
 inline void IteratePatternIndex(byte overrideIndex = 255)
@@ -4768,45 +4845,32 @@ void setup()
 
 void loop()
 {
+  currentMillis = millis();
+  
   readNesController();
   
-  unsigned long currentMillis = millis();
   if (buttonTimer < currentMillis)
   {
-    if (digitalRead(PATTERN_SWITCH_BUTTON) == LOW)
+    if (bitRead(NESRegister, SELECT_BUTTON) == 0)
     {
+      lastState = -1;
       buttonTimer = currentMillis + BUTTON_DELAY;
       IteratePatternIndex();
     }
   }
 
-  if (patternIndex != 14) ClearStrip(); // Don't clear
   switch (patternIndex)
   {
-    case 0:   SoundReact();                                     break;
-    case 1:   RainbowFlow1();                                   break;
-    case 2:   RainbowFlow2(1, true);                            break;
-    case 3:   ColorFire();                                      break;
-    case 4:   GlowFlow(10, 100);                                break;
-    case 5:   PacManChompDanceThrough();                        break;
-    case 6:   PacManChompDanceThroughPlusGhost();               break;
-    case 7:   MsPacManChompDanceThrough();                      break;
-    case 8:   SpaceInvaderDanceThrough();                       break;
-    case 9:
-    {
-      byte color1 = random(1, COMMON_COLOR_COUNT);
-      byte color2 = random(1, COMMON_COLOR_COUNT);
-      byte color3 = random(1, COMMON_COLOR_COUNT);
-      ThreeSpaceInvaderDanceThrough(color1, color1, color2, color2, color3, color3); //  ColorBurst Invaders
-      break;
-    }
-    case 10:  ThreeSpaceInvaderDanceThrough();                  break;
-    case 11:  ThreeSpaceInvaderDanceThrough(2, 1, 2, 3, 2, 4);  break; // <= Ninja Turtles Invaders
-    case 12:  MegaManRunThrough();                              break;
-    case 13:  MarioWarpThrough();                               break;
-    case 14:  Tetris();                                         break;
-    case 15:  MechaKoopaWalkThrough();                          break;
-    default:  patternIndex = 0;                                 break;
+    case 0:   SoundReact();                                                     break;
+    case 1:   RainbowFlow1();                                                   break;
+    case 2:   RainbowFlow2();                                                   break;
+    case 3:   ColorFire();                                                      break;
+    case 4:   GlowFlow(10, 100);                                                break;
+    case 5:   ClearStrip(); PacManChompDanceThrough(-6, 7); FastLED.show();     break;
+    case 6:   PacManChompDanceThroughPlusGhost(-6, 7);                          break;
+    case 7:   ClearStrip(); MsPacManChompDanceThrough(6, 7); FastLED.show();    break;
+    case 8:   ClearStrip(); SpaceInvaderDanceThrough(-6, 7); FastLED.show();    break;
+    case 9:   Tetris();                                                         break;
+    default:  patternIndex = 0;                                                 break;
   }
-  FastLED.show();
 }

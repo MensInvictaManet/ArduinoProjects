@@ -26,7 +26,7 @@
         --------------
           2  | Select   
         --------------
-                      3  | Start  
+          3  | Start  
         --------------
           4  |   Up  
         --------------
@@ -41,11 +41,11 @@
   connector end):
     __________
    /      |
-  /       O 1 | 1 - Ground
-        |           | 2 - Clock
+  /       O 1 |   1 - Ground
+  |           |   2 - Clock
   | 7 O   O 2 |   3 - Latch
-  |           | 4 - Data Out
-  | 6 O   O 3 | 5 - No Connection
+  |           |   4 - Data Out
+  | 6 O   O 3 |   5 - No Connection
   |           |   6 - No Connection
   | 5 O   O 4 |   7 - +5V
   |___________|
@@ -60,9 +60,9 @@
 #define LEFT_BUTTON             6
 #define RIGHT_BUTTON            7
 
-#define NES_DATA_PIN            6
 #define NES_CLOCK_PIN           4
 #define NES_LATCH_PIN           5
+#define NES_DATA_PIN            6
 
 byte NESRegister = 0; //  We will use this to hold current button states
 
@@ -73,17 +73,13 @@ void NES_Controller_Test()
     {
       Serial.println("LEFT");
     }
-    else if (bitRead(NESRegister, RIGHT_BUTTON) == 0)
+    if (bitRead(NESRegister, RIGHT_BUTTON) == 0)
     {
       Serial.println("RIGHT");
     }
     if (bitRead(NESRegister, UP_BUTTON) == 0)
     {
       Serial.println("UP");
-    }
-    if (bitRead(NESRegister, DOWN_BUTTON) == 0)
-    {
-      Serial.println("DOWN");
     }
     if (bitRead(NESRegister, DOWN_BUTTON) == 0)
     {
