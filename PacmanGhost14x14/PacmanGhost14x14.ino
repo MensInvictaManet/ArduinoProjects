@@ -24,12 +24,12 @@
 #define LEFT_BUTTON             6
 #define RIGHT_BUTTON            7
 
-#define TETRIS_BOARD_START_X    9
-#define TETRIS_BOARD_START_Y    4
-#define TETRIS_BOARD_WIDTH      14
-#define TETRIS_BOARD_HEIGHT     12
+#define TETRIS_BOARD_START_X    0
+#define TETRIS_BOARD_START_Y    2
+#define TETRIS_BOARD_WIDTH      4
+#define TETRIS_BOARD_HEIGHT     10
 
-#define TETRIS_INDEX            14       
+#define TETRIS_INDEX            9       
 
 #define USING_WS2801            false
 
@@ -334,7 +334,7 @@ inline void SetLights(int x, int y, int count, const CRGB& color)
   for (int i = 0; i < count; ++i) SetLED(x + i, y, color);
 }
 
-void ResetTetris(int x = 14, int y = 13, byte outerBG = 54, byte innerBG = 0)
+void ResetTetris(int x = (PANEL_WIDTH / 2), int y = (PANEL_HEIGHT / 2), byte outerBG = 54, byte innerBG = 0)
 {
   SetLights(x - 14, y - 13, 28, outerBG); // START ROW -13
   SetLights(x - 14, y - 12, 28, outerBG); // START ROW -12
@@ -857,7 +857,6 @@ void SoundReact()
 
   //  Don't update the screen if nothing has changed
   STATIC_SCREEN_CHECK(soundLevelAltered);
-  Serial.println(soundLevelAltered);
   
   CRGB soundColor = Wheel(soundLevelAltered);
   int x = 7;
@@ -1096,7 +1095,7 @@ void SpaceInvaderDanceThrough(int x = -6, int y = 14, byte color1 = 7, byte colo
   static bool ninja_turtle = false;
   static int ninja_turtle_color = 0;
   static int ninja_turtle_color_index = 0;
-  static int berzerkTimer = 0;
+  static unsigned long berzerkTimer = 0;
   static byte berzerkColor = color1;
   
   static byte R = random(0, 256);
@@ -1111,9 +1110,10 @@ void SpaceInvaderDanceThrough(int x = -6, int y = 14, byte color1 = 7, byte colo
 
   if (berzerk)
   {
-      color1 = color2 = berzerkColor;
+    color1 = color2 = berzerkColor;
     if (berzerkTimer < currentMillis)
     {
+        Serial.println(berzerkColor);
         berzerkColor = GetRandomVibrantColorIndex();
         berzerkTimer = currentMillis + 50;
     }
@@ -4716,7 +4716,7 @@ void Tetris()
       currentFacing = 0;
       if (!CheckTetrisSpace(TETRIS_BOARD_START_X + xPos, TETRIS_BOARD_START_Y + yPos, currentShape, currentFacing)) ShowTetrisFailureAnimation();
     }
-    nextFrameMillis += 250;
+    nextFrameMillis += 333;
   }
 
   FastLED.show();
@@ -4864,8 +4864,8 @@ void loop()
     case 0:   SoundReact();                                                     break;
     case 1:   RainbowFlow1();                                                   break;
     case 2:   RainbowFlow2();                                                   break;
-    case 3:   ColorFire();                                                      break;
-    case 4:   GlowFlow(10, 100);                                                break;
+    case 3:   GlowFlow(10, 100);                                                break;
+    case 4:   ColorFire();                                                      break;
     case 5:   ClearStrip(); PacManChompDanceThrough(-6, 7); FastLED.show();     break;
     case 6:   PacManChompDanceThroughPlusGhost(-6, 7);                          break;
     case 7:   ClearStrip(); MsPacManChompDanceThrough(6, 7); FastLED.show();    break;
