@@ -9,7 +9,7 @@ int lastState = -1;
 int currState = 0;
 #define STATIC_SCREEN_CHECK(state) if ((currState = state) == lastState) return; else lastState = currState;
 
-#define SOUND_IGNORE_MAX 50
+#define SOUND_IGNORE_MAX 10
 
 byte soundRating = 0; 
 const int sampleWindow = 15; // Sample window width in mS (50 mS = 20Hz)

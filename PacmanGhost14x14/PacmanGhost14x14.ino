@@ -53,6 +53,7 @@ CRGB leds[LED_COUNT];
 int lastState = -1;
 int currState = 0;
 #define STATIC_SCREEN_CHECK(state) if ((currState = state) == lastState) return; else lastState = currState;
+#define STATIC_SCREEN_CLEAR() lastState = -1;
 
 //////////////////////////////
 //  HELPER FUNCTIONS
@@ -421,13 +422,13 @@ void ResetTetris(int x = (PANEL_WIDTH / 2), int y = (PANEL_HEIGHT / 2), byte out
 
 
 
-void DisplayGhostEyes(bool dead = false, byte dir = 3)
+void DisplayGhostEyes(byte ghostID = 0, byte dir = 3)
 {
-  if (dead)
+  if (ghostID == 4 || ghostID == 5)
   {
     int x = 8;
     int y = 7;
-    int holeColor = 7;
+    int holeColor = (ghostID == 4) ? 7 : 1;
     
     //  Dead ghost eyes and mouth
     SetLights(x - 4, y - 2, 2, holeColor);
@@ -498,6 +499,109 @@ void DisplayGhostEyes(bool dead = false, byte dir = 3)
   }
 }
 
+void DisplayHeart(int x = 6, int y = 6, int outline = 0, int primary = 26, int gleam = 7)
+{
+  SetLights(x - 5, y - 6, 3, outline); // START ROW -6
+  SetLights(x + 1, y - 6, 3, outline);
+  SetLED(x - 6, y - 5, outline); // START ROW -5
+  SetLights(x - 5, y - 5, 3, primary);
+  SetLED(x - 2, y - 5, outline);
+  SetLED(x + 0, y - 5, outline);
+  SetLights(x + 1, y - 5, 3, primary);
+  SetLED(x + 4, y - 5, outline);
+  SetLED(x - 7, y - 4, outline); // START ROW -4
+  SetLED(x - 6, y - 4, primary);
+  SetLights(x - 5, y - 4, 2, gleam);
+  SetLights(x - 3, y - 4, 2, primary);
+  SetLED(x - 1, y - 4, outline);
+  SetLights(x + 0, y - 4, 5, primary);
+  SetLED(x + 5, y - 4, outline);
+  SetLED(x - 7, y - 3, outline); // START ROW -3
+  SetLED(x - 6, y - 3, primary);
+  SetLED(x - 5, y - 3, gleam);
+  SetLights(x - 4, y - 3, 9, primary);
+  SetLED(x + 5, y - 3, outline);
+  SetLED(x - 7, y - 2, outline); // START ROW -2
+  SetLights(x - 6, y - 2, 11, primary);
+  SetLED(x + 5, y - 2, outline);
+  SetLED(x - 7, y - 1, outline); // START ROW -1
+  SetLights(x - 6, y - 1, 11, primary);
+  SetLED(x + 5, y - 1, outline);
+  SetLED(x - 6, y + 0, outline); // START ROW +0
+  SetLights(x - 5, y + 0, 9, primary);
+  SetLED(x + 4, y + 0, outline);
+  SetLED(x - 5, y + 1, outline); // START ROW +1
+  SetLights(x - 4, y + 1, 7, primary);
+  SetLED(x + 3, y + 1, outline);
+  SetLED(x - 4, y + 2, outline); // START ROW +2
+  SetLights(x - 3, y + 2, 5, primary);
+  SetLED(x + 2, y + 2, outline);
+  SetLED(x - 3, y + 3, outline); // START ROW +3
+  SetLights(x - 2, y + 3, 3, primary);
+  SetLED(x + 1, y + 3, outline);
+  SetLED(x - 2, y + 4, outline); // START ROW +4
+  SetLED(x - 1, y + 4, primary);
+  SetLED(x + 0, y + 4, outline);
+  SetLED(x - 1, y + 5, outline); // START ROW +5
+}
+
+void DisplayEDCSymbol(int x = 6, int y = 6, int outline = 0, int fontColor = 7, bool showOutline = true)
+{
+  if (showOutline)
+  {
+    SetLights(x - 5, y - 2, 3, outline); // START ROW -2
+    SetLights(x - 1, y - 2, 2, outline);
+    SetLights(x + 4, y - 2, 2, outline);
+    SetLED(x - 6, y - 1, outline); // START ROW -1
+    SetLED(x - 2, y - 1, outline);
+    SetLED(x + 1, y - 1, outline);
+    SetLED(x + 3, y - 1, outline);
+    SetLED(x + 6, y - 1, outline);
+    SetLED(x - 6, y + 0, outline); // START ROW +0
+    SetLights(x - 4, y + 0, 3, outline);
+    SetLED(x + 0, y + 0, outline);
+    SetLED(x + 2, y + 0, outline);
+    SetLights(x + 4, y + 0, 2, outline);
+    SetLED(x - 6, y + 1, outline); // START ROW +1
+    SetLights(x - 3, y + 1, 2, outline);
+    SetLED(x + 0, y + 1, outline);
+    SetLED(x + 2, y + 1, outline);
+    SetLED(x + 4, y + 1, outline);
+    SetLED(x - 6, y + 2, outline); // START ROW +2
+    SetLights(x - 4, y + 2, 3, outline);
+    SetLED(x + 0, y + 2, outline);
+    SetLED(x + 2, y + 2, outline);
+    SetLights(x + 4, y + 2, 2, outline);
+    SetLED(x - 6, y + 3, outline); // START ROW +3
+    SetLED(x - 2, y + 3, outline);
+    SetLED(x + 1, y + 3, outline);
+    SetLED(x + 3, y + 3, outline);
+    SetLED(x + 6, y + 3, outline);
+    SetLights(x - 5, y + 4, 3, outline); // START ROW +4
+    SetLights(x - 1, y + 4, 2, outline);
+    SetLights(x + 4, y + 4, 2, outline);
+  }
+  
+  SetLights(x - 5, y - 1, 3, fontColor);
+  SetLights(x - 1, y - 1, 2, fontColor);
+  SetLights(x + 4, y - 1, 2, fontColor);
+  SetLED(x - 5, y + 0, fontColor);
+  SetLED(x - 1, y + 0, fontColor);
+  SetLED(x + 1, y + 0, fontColor);
+  SetLED(x + 3, y + 0, fontColor);
+  SetLights(x - 5, y + 1, 2, fontColor);
+  SetLED(x - 1, y + 1, fontColor);
+  SetLED(x + 1, y + 1, fontColor);
+  SetLED(x + 3, y + 1, fontColor);
+  SetLED(x - 5, y + 2, fontColor);
+  SetLED(x - 1, y + 2, fontColor);
+  SetLED(x + 1, y + 2, fontColor);
+  SetLED(x + 3, y + 2, fontColor);
+  SetLights(x - 5, y + 3, 3, fontColor);
+  SetLights(x - 1, y + 3, 2, fontColor);
+  SetLights(x + 4, y + 3, 2, fontColor);
+}
+
 void RainbowFlow1()
 {
   static int delayTime = 1;
@@ -517,7 +621,7 @@ void RainbowFlow1()
     hue += hueChange;
     fill_rainbow(leds, LED_COUNT, hue, -1);
 
-    if (deadEyes) DisplayGhostEyes(true);
+    if (deadEyes) DisplayGhostEyes(4);
     
     FastLED.show();
     nextFrameMillis += delayTime;
@@ -549,7 +653,7 @@ void RainbowFlow2()
     }
     if (!berzerk) rainbowPosition += hueChange;
 
-    if (deadEyes) DisplayGhostEyes(true);
+    if (deadEyes) DisplayGhostEyes(4);
     
     FastLED.show();
     nextFrameMillis += delayTime;
@@ -585,7 +689,7 @@ void Fire(byte R, byte G, byte B)
       leds[i] = CRGB(r1, g1, b1);
     }
 
-    if (deadEyes) DisplayGhostEyes(true);
+    if (deadEyes) DisplayGhostEyes(4);
     
     FastLED.show();
     nextFrameMillis += random(delayTime * 2, delayTime * 6);
@@ -610,6 +714,64 @@ void ColorFire()
   B += random(1, (colorChangeSpeed + 1) * 2);
 
   Fire(R, G, B);
+}
+
+void DisplaySquare(int x = 6, int y = 6, int w = 2, int h = 2, const CRGB& color = CRGB::Black, bool full = false)
+{
+  SetLights(x, y, w, color);
+  SetLights(x, y + h - 1, w, color);
+
+  if (h > 2)
+  {
+    if (full == true)
+    {
+      for (int i = 1; i < h - 1; ++i)
+        SetLights(x, y + i, w, color);
+    }
+    else
+    {
+      for (int i = 1; i < h - 1; ++i)
+      {
+        SetLED(x, y + i, color);
+        if (w > 1) SetLED(x + w - 1, y + i, color); 
+      }
+    }
+  }
+}
+
+void ColorEruption()
+{
+  static bool edcSymbol = false;
+  static bool deadEyes = false;
+  static byte centerColorIndex = random(0, 255);
+  const byte colorIterator = 20;
+  
+  if (IsNextFrameReady())
+  {
+    if (buttonTimer < currentMillis)
+    {
+      if (bitRead(NESRegister, A_BUTTON) == 0)    { deadEyes = false; edcSymbol = !edcSymbol; buttonTimer = currentMillis + BUTTON_DELAY; }
+      if (bitRead(NESRegister, B_BUTTON) == 0)    { edcSymbol = false; deadEyes = !deadEyes; buttonTimer = currentMillis + BUTTON_DELAY; }
+    }
+
+    ClearStrip();
+
+    DisplaySquare(6, 6,  2,  2, Wheel(centerColorIndex + (colorIterator * 0)));
+    DisplaySquare(5, 5,  4,  4, Wheel(centerColorIndex + (colorIterator * 1)));
+    DisplaySquare(4, 4,  6,  6, Wheel(centerColorIndex + (colorIterator * 2)));
+    DisplaySquare(3, 3,  8,  8, Wheel(centerColorIndex + (colorIterator * 3)));
+    DisplaySquare(2, 2, 10, 10, Wheel(centerColorIndex + (colorIterator * 4)));
+    DisplaySquare(1, 1, 12, 12, Wheel(centerColorIndex + (colorIterator * 5)));
+    DisplaySquare(0, 0, 14, 14, Wheel(centerColorIndex + (colorIterator * 6)));
+  
+    centerColorIndex += colorIterator;
+
+    if (deadEyes) DisplayGhostEyes(4);
+    if (edcSymbol) DisplayEDCSymbol();
+  
+    FastLED.show();
+    nextFrameMillis += 166;
+  }
 }
 
 void GlowFlow(const int colorChangeSpeed = 1, const unsigned long changeDelay = 1000)
@@ -641,7 +803,7 @@ void GlowFlow(const int colorChangeSpeed = 1, const unsigned long changeDelay = 
   CRGB currentCRGB(colorCurrent.R, colorCurrent.G, colorCurrent.B);
   fill_solid(leds, LED_COUNT, currentCRGB);
 
-  if (deadEyes) DisplayGhostEyes(true);
+  if (deadEyes) DisplayGhostEyes(4);
   
   FastLED.show();
     
@@ -1123,7 +1285,7 @@ void PacManChompDanceThroughPlusGhost(int x = -6, int y = 14)
 {
   ClearStrip();
   PacManChompDanceThrough(x -  0, y, 120);
-  PacManGhostDanceThrough(x - 20, y, 120, 3, 7, 0);
+  PacManGhostDanceThrough(x - 20, y, 120, 1, 7, 0);
   PacManGhostDanceThrough(x - 40, y, 120, 51, 7, 0);
   PacManGhostDanceThrough(x - 60, y, 120, 52, 7, 0);
   PacManGhostDanceThrough(x - 80, y, 120, 53, 7, 0);
@@ -1223,7 +1385,7 @@ void DrawPacManGhostDeadWalk02(int x, int y, byte skinColor = 62, byte holeColor
 
 void SoundReact2()
 {
-  const int minSoundReactLevel = 50;
+  const int minSoundReactLevel = 40;
   byte soundLevelAltered = soundLevel > minSoundReactLevel ? ((((soundLevel / 25) * 25) - minSoundReactLevel) / 3) + minSoundReactLevel : soundLevel;
   if (soundLevelAltered < minSoundReactLevel) soundLevelAltered = 0;
 
@@ -1232,6 +1394,57 @@ void SoundReact2()
 
   if (soundLevelAltered <= minSoundReactLevel) DrawPacManGhostWalk02(7, 7, 1, 7, 0);
   else DrawPacManGhostDeadWalk02(8, 7, 3, 7);
+  
+  FastLED.show();
+}
+
+void DrawSpectrumTower(int index, int towerHeight, int limiterHeight, bool rainbow = false)
+{
+  for (int i = 0; i < towerHeight; ++i) SetLights(index * 2, 11 - i, 2, rainbow ? Wheel(20 + 12 * i) : CRGB::Blue);
+  
+  SetLights(index * 2, 11 - limiterHeight, 2, rainbow ? 7 : 1);
+}
+
+void SoundReactSpectrum()
+{
+  static int spectrumHeight[2][7];
+  static bool fallToggle = false;
+  static bool rainbow = false;
+  
+  const int minSoundReactLevel = 50;
+  byte soundLevelAltered = soundLevel > minSoundReactLevel ? ((((soundLevel / 25) * 25) - minSoundReactLevel) / 3) + minSoundReactLevel : soundLevel;
+  soundLevelAltered = sqrt(soundLevelAltered) * 10;
+
+  if (IsNextFrameReady())
+  {
+    if (buttonTimer < currentMillis)
+    {
+      if (bitRead(NESRegister, B_BUTTON) == 0)      { rainbow = !rainbow; buttonTimer = currentMillis + BUTTON_DELAY; }
+    }
+    
+    fallToggle = !fallToggle;
+    ClearStrip();
+    
+    //  Set the tower heights
+    spectrumHeight[0][3] = max((soundLevelAltered / 10), 1);
+    for (int i = 0; i < 7; ++i)
+    {
+      if (i == 3) continue;
+      if (i == 2 || i == 4) spectrumHeight[0][i] = max(random(0, spectrumHeight[0][3]) / 1, 1);
+      if (i == 1 || i == 5) spectrumHeight[0][i] = max(random(0, spectrumHeight[0][3]) / 2, 1);
+      if (i == 0 || i == 6) spectrumHeight[0][i] = max(random(0, spectrumHeight[0][3]) / 3, 1);
+    }
+
+    //  Set the limiter heights
+    for (int i = 0; i < 7; ++i)
+    {
+      if      (spectrumHeight[1][i] < spectrumHeight[0][i]) spectrumHeight[1][i] = spectrumHeight[0][i];
+      else if (spectrumHeight[1][i] > spectrumHeight[0][i] && fallToggle) spectrumHeight[1][i] -= 1;
+      DrawSpectrumTower(i, spectrumHeight[0][i], spectrumHeight[1][i], rainbow);
+    }
+    
+    nextFrameMillis += 50;
+  }
   
   FastLED.show();
 }
@@ -1253,17 +1466,28 @@ void DisplayGhost(int x, int y)
   
   switch (ghostID)
   {
-    case 0:     ghostColor = CRGB(GetColor(1, 0), GetColor(1, 1), GetColor(1, 2));        break;
-    case 1:     ghostColor = CRGB(GetColor(51, 0), GetColor(51, 1), GetColor(51, 2));     break;
-    case 2:     ghostColor = CRGB(GetColor(52, 0), GetColor(52, 1), GetColor(52, 2));     break;
-    case 3:     ghostColor = CRGB(GetColor(53, 0), GetColor(53, 1), GetColor(53, 2));     break;
-    case 4:     ghostColor = CRGB(GetColor(62, 0), GetColor(62, 1), GetColor(62, 2));     break;
+    case 0:     SetStrip(CRGB(GetColor(1, 0), GetColor(1, 1), GetColor(1, 2)));        break;    //  BLINKY
+    case 1:     SetStrip(CRGB(GetColor(51, 0), GetColor(51, 1), GetColor(51, 2)));     break;    //  PINKY
+    case 2:     SetStrip(CRGB(GetColor(52, 0), GetColor(52, 1), GetColor(52, 2)));     break;    //  INKY
+    case 3:     SetStrip(CRGB(GetColor(53, 0), GetColor(53, 1), GetColor(53, 2)));     break;    //  CLYDE
+    case 4:     SetStrip(CRGB(GetColor(62, 0), GetColor(62, 1), GetColor(62, 2)));     break;    //  DEAD
+    case 5:     SetStrip(CRGB(GetColor(7, 0), GetColor(7, 1), GetColor(7, 2)));        break;    //  SHOCKED
+    case 6:
+                DisplaySquare(0, 0, 14, 5, CRGB(GetColor(1, 0), GetColor(1, 1), GetColor(1, 2)), true);
+                DisplaySquare(0, 5, 14, 4, CRGB(GetColor(4, 0), GetColor(4, 1), GetColor(4, 2)), true);
+                DisplaySquare(0, 9, 14, 5, CRGB(GetColor(2, 0), GetColor(2, 1), GetColor(2, 2)), true);
+                break;                                                                            // REGGAE
+                
     default:    ghostID = 0;
+                SetStrip(CRGB(GetColor(1, 0), GetColor(1, 1), GetColor(1, 2)));        break;
   }
 
-  SetStrip(ghostColor);
-  DisplayGhostEyes(ghostID == 4, dir);
+// void DisplaySquare(int x = 6, int y = 6, int w = 2, int h = 2, const CRGB& color = CRGB::Black, bool full = false)
 
+  //  Don't update the screen if nothing has changed
+  STATIC_SCREEN_CHECK(int(ghostID + (dir << 4)));
+
+  DisplayGhostEyes(ghostID, dir);
   FastLED.show();
 }
 
@@ -1365,6 +1589,24 @@ void SpaceInvaderDanceThrough(int x = -6, int y = 14, byte color1 = 7, byte colo
   
   if (frame & 1)  DrawSpaceInvader01(x + frame, y, ninja_turtle ? 2 : color1, ninja_turtle ? ninja_turtle_color : color2);
   else            DrawSpaceInvader02(x + frame, y, ninja_turtle ? 2 : color1, ninja_turtle ? ninja_turtle_color : color2);
+}
+
+void HeartDanceThrough(int x = -6, int y = 7, byte outline = 0, byte primary = 26, byte gleam = 7)
+{
+  int frame = GetFrame(32, 200);
+
+  SetStrip(CRGB(GetColor(8, 0), GetColor(8, 1), GetColor(8, 2)));
+  int heightAdjust;
+  switch (frame % 8)
+  {
+    case 0: case 4: heightAdjust = 0;    break;
+    case 1: case 3: heightAdjust = -1;   break;
+    case 2:         heightAdjust = -2;   break;
+    case 5: case 7: heightAdjust = 1;    break;
+    case 6:         heightAdjust = 2;    break;
+  }
+  
+  DisplayHeart(PANEL_WIDTH - frame + 6, y + heightAdjust, outline, primary, gleam);
 }
 
 void ThreeSpaceInvaderDanceThrough(byte color1a = 7, byte color1b = 7, byte color2a = 7, byte color2b = 7, byte color3a = 7, byte color3b = 7)
@@ -4972,6 +5214,7 @@ inline void DeiteratePatternIndex(byte overrideIndex = 255)
     if (overrideIndex == 255) --patternIndex;
     else patternIndex = overrideIndex;
     UpdateMillisOffset();
+    STATIC_SCREEN_CLEAR();
     if (patternIndex == TETRIS_INDEX) ResetTetris();
 }
 
@@ -4981,6 +5224,7 @@ inline void IteratePatternIndex(byte overrideIndex = 255)
     if (overrideIndex == 255) ++patternIndex;
     else patternIndex = overrideIndex;
     UpdateMillisOffset();
+    STATIC_SCREEN_CLEAR();
     if (patternIndex == TETRIS_INDEX) ResetTetris();
 }
 
@@ -5120,19 +5364,22 @@ void loop()
 
   switch (patternIndex)
   {
-    case 0:  patternIndex = 10;                                                 break;
+    case 0:  patternIndex = 14;                                                 break;
     case 1:   SoundReact1();                                                    break;
     case 2:   SoundReact2();                                                    break;
-    case 3:   DisplayGhost(7, 7);                                               break;
-    case 4:   RainbowFlow1();                                                   break;
-    case 5:   RainbowFlow2();                                                   break;
-    case 6:   GlowFlow(10, 100);                                                break;
-    case 7:   ColorFire();                                                      break;
-    case 8:   ClearStrip(); PacManChompDanceThrough(-6, 7); FastLED.show();     break;
-    case 9:   PacManChompDanceThroughPlusGhost(-6, 7);                          break;
-    case 10:  ClearStrip(); MsPacManChompDanceThrough(6, 7); FastLED.show();    break;
-    case 11:  ClearStrip(); SpaceInvaderDanceThrough(-6, 7); FastLED.show();    break;
-    //case 12:  Tetris();                                                         break;
+    case 3:   SoundReactSpectrum();                                             break;
+    case 4:   DisplayGhost(7, 7);                                               break;
+    case 5:   RainbowFlow1();                                                   break;
+    case 6:   RainbowFlow2();                                                   break;
+    case 7:   GlowFlow(10, 100);                                                break;
+    case 8:   ColorFire();                                                      break;
+    case 9:   ColorEruption();                                                  break;
+    case 10:  ClearStrip(); PacManChompDanceThrough(-6, 7); FastLED.show();     break;
+    case 11:  PacManChompDanceThroughPlusGhost(-6, 7);                          break;
+    case 12:  ClearStrip(); MsPacManChompDanceThrough(6, 7); FastLED.show();    break;
+    case 13:  ClearStrip(); SpaceInvaderDanceThrough(-6, 7); FastLED.show();    break;
+    case 14:  ClearStrip(); HeartDanceThrough(); FastLED.show();                break;
+    //case 12:  Tetris();                                                       break;
     default:  patternIndex = 1;                                                 break;
   }
 }
