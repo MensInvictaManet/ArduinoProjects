@@ -1,10 +1,12 @@
 #include <FastLED.h>
 
-#define LED_STRIP_PIN   12   //  The NeoPixel string data pin
+#define DEBUG_OUTPUT    0
 
-#define NUM_LEDS        34  //  The number of LEDs we want to alter
-#define MAX_LEDS        34  //  The number of LEDs on the full strip
-#define BRIGHTNESS  	  60  //  The number (0 to 200) for the brightness setting)
+#define LED_STRIP_PIN   0   //  The NeoPixel string data pin
+
+#define NUM_LEDS        8  //  The number of LEDs we want to alter
+#define MAX_LEDS        8  //  The number of LEDs on the full strip
+#define BRIGHTNESS  	  40  //  The number (0 to 200) for the brightness setting)
 #define DEBUG_OUTPUT    false
 
 CRGB leds[MAX_LEDS];
@@ -34,15 +36,18 @@ void Blink(CRGB color, int milliWait = 1000)
 }
 
 void setup(){
-  
+#if DEBUG_OUTPUT
   Serial.begin(9600);
+#endif
 	
 	//  Setup the LED strip and color all LEDs black
 	FastLED.addLeds<WS2811, LED_STRIP_PIN, GRB>(leds, MAX_LEDS).setCorrection( TypicalLEDStrip );
 	FastLED.setBrightness(BRIGHTNESS);
 	fillColor(CRGB::Black, true);
 
+#if DEBUG_OUTPUT
 	Serial.println("Start Demo: Simple Read");
+#endif
 }
 
 void loop(){
