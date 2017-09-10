@@ -60,9 +60,9 @@
 #define LEFT_BUTTON             6
 #define RIGHT_BUTTON            7
 
-#define NES_CLOCK_PIN           4
+#define NES_CLOCK_PIN           6
 #define NES_LATCH_PIN           5
-#define NES_DATA_PIN            6
+#define NES_DATA_PIN            4
 
 byte NESRegister = 0; //  We will use this to hold current button states
 

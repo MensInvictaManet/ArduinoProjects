@@ -11,9 +11,9 @@
 #define LED_COUNT               158                           //  The number of LEDs we want to control
 #define BRIGHTNESS              60                            //  The number (0 to 200) for the brightness setting)
 
-#define NES_DATA_PIN            6
-#define NES_CLOCK_PIN           4
+#define NES_CLOCK_PIN           6
 #define NES_LATCH_PIN           5
+#define NES_DATA_PIN            4
 
 #define A_BUTTON                0
 #define B_BUTTON                1
@@ -24,12 +24,12 @@
 #define LEFT_BUTTON             6
 #define RIGHT_BUTTON            7
 
-#define TETRIS_BOARD_START_X    0
+#define TETRIS_BOARD_START_X    2
 #define TETRIS_BOARD_START_Y    2
-#define TETRIS_BOARD_WIDTH      4
+#define TETRIS_BOARD_WIDTH      10
 #define TETRIS_BOARD_HEIGHT     10
 
-#define TETRIS_INDEX            10       
+#define TETRIS_INDEX            15       
 
 #define USING_WS2801            false
 
@@ -336,91 +336,34 @@ inline void SetLights(int x, int y, int count, const CRGB& color)
   for (int i = 0; i < count; ++i) SetLED(x + i, y, color);
 }
 
-void ResetTetris(int x = (PANEL_WIDTH / 2), int y = (PANEL_HEIGHT / 2), byte outerBG = 54, byte innerBG = 0)
+void ResetTetris(int x = (PANEL_WIDTH / 2), int y = (PANEL_HEIGHT / 2), byte outline = 54)
 {
-  SetLights(x - 14, y - 13, 28, outerBG); // START ROW -13
-  SetLights(x - 14, y - 12, 28, outerBG); // START ROW -12
-  SetLights(x - 14, y - 11, 28, outerBG); // START ROW -11
-  SetLights(x - 14, y - 10, 28, outerBG); // START ROW -10
-  SetLights(x - 14, y - 9, 9, outerBG); // START ROW -9
-  SetLights(x - 5, y - 9, 10, innerBG);
-  SetLED(x + 5, y - 9, outerBG);
-  SetLights(x + 6, y - 9, 6, innerBG);
-  SetLights(x + 12, y - 9, 2, outerBG);
-  SetLights(x - 14, y - 8, 9, outerBG); // START ROW -8
-  SetLights(x - 5, y - 8, 10, innerBG);
-  SetLED(x + 5, y - 8, outerBG);
-  SetLights(x + 6, y - 8, 6, innerBG);
-  SetLights(x + 12, y - 8, 2, outerBG);
-  SetLights(x - 14, y - 7, 9, outerBG); // START ROW -7
-  SetLights(x - 5, y - 7, 10, innerBG);
-  SetLED(x + 5, y - 7, outerBG);
-  SetLights(x + 6, y - 7, 6, innerBG);
-  SetLights(x + 12, y - 7, 2, outerBG);
-  SetLights(x - 14, y - 6, 9, outerBG); // START ROW -6
-  SetLights(x - 5, y - 6, 10, innerBG);
-  SetLED(x + 5, y - 6, outerBG);
-  SetLights(x + 6, y - 6, 6, innerBG);
-  SetLights(x + 12, y - 6, 2, outerBG);
-  SetLights(x - 14, y - 5, 9, outerBG); // START ROW -5
-  SetLights(x - 5, y - 5, 10, innerBG);
-  SetLED(x + 5, y - 5, outerBG);
-  SetLights(x + 6, y - 5, 6, innerBG);
-  SetLights(x + 12, y - 5, 2, outerBG);
-  SetLights(x - 14, y - 4, 9, outerBG); // START ROW -4
-  SetLights(x - 5, y - 4, 10, innerBG);
-  SetLED(x + 5, y - 4, outerBG);
-  SetLights(x + 6, y - 4, 6, innerBG);
-  SetLights(x + 12, y - 4, 2, outerBG);
-  SetLights(x - 14, y - 3, 9, outerBG); // START ROW -3
-  SetLights(x - 5, y - 3, 10, innerBG);
-  SetLights(x + 5, y - 3, 9, outerBG);
-  SetLights(x - 14, y - 2, 9, outerBG); // START ROW -2
-  SetLights(x - 5, y - 2, 10, innerBG);
-  SetLights(x + 5, y - 2, 9, outerBG);
-  SetLights(x - 14, y - 1, 9, outerBG); // START ROW -1
-  SetLights(x - 5, y - 1, 10, innerBG);
-  SetLights(x + 5, y - 1, 9, outerBG);
-  SetLights(x - 14, y + 0, 9, outerBG); // START ROW +0
-  SetLights(x - 5, y + 0, 10, innerBG);
-  SetLights(x + 5, y + 0, 9, outerBG);
-  SetLights(x - 14, y + 1, 9, outerBG); // START ROW +1
-  SetLights(x - 5, y + 1, 10, innerBG);
-  SetLights(x + 5, y + 1, 9, outerBG);
-  SetLights(x - 14, y + 2, 9, outerBG); // START ROW +2
-  SetLights(x - 5, y + 2, 10, innerBG);
-  SetLights(x + 5, y + 2, 9, outerBG);
-  SetLights(x - 14, y + 3, 9, outerBG); // START ROW +3
-  SetLights(x - 5, y + 3, 10, innerBG);
-  SetLights(x + 5, y + 3, 9, outerBG);
-  SetLights(x - 14, y + 4, 9, outerBG); // START ROW +4
-  SetLights(x - 5, y + 4, 10, innerBG);
-  SetLights(x + 5, y + 4, 9, outerBG);
-  SetLights(x - 14, y + 5, 9, outerBG); // START ROW +5
-  SetLights(x - 5, y + 5, 10, innerBG);
-  SetLights(x + 5, y + 5, 9, outerBG);
-  SetLights(x - 14, y + 6, 9, outerBG); // START ROW +6
-  SetLights(x - 5, y + 6, 10, innerBG);
-  SetLights(x + 5, y + 6, 9, outerBG);
-  SetLights(x - 14, y + 7, 9, outerBG); // START ROW +7
-  SetLights(x - 5, y + 7, 10, innerBG);
-  SetLights(x + 5, y + 7, 9, outerBG);
-  SetLights(x - 14, y + 8, 9, outerBG); // START ROW +8
-  SetLights(x - 5, y + 8, 10, innerBG);
-  SetLights(x + 5, y + 8, 9, outerBG);
-  SetLights(x - 14, y + 9, 9, outerBG); // START ROW +9
-  SetLights(x - 5, y + 9, 10, innerBG);
-  SetLights(x + 5, y + 9, 9, outerBG);
-  SetLights(x - 14, y + 10, 9, outerBG); // START ROW +10
-  SetLights(x - 5, y + 10, 10, innerBG);
-  SetLights(x + 5, y + 10, 9, outerBG);
-  SetLights(x - 14, y + 11, 28, outerBG); // START ROW +11
-  SetLights(x - 14, y + 12, 28, outerBG); // START ROW +12
-  SetLights(x - 14, y + 13, 28, outerBG); // START ROW +13
-  SetLights(x - 14, y + 14, 28, outerBG); // START ROW +14
+  ClearStrip();
+  SetLights(x - 7, y - 7, 14, outline); // START ROW -7
+  SetLights(x - 7, y - 6, 14, outline); // START ROW -6
+  SetLights(x - 7, y - 5, 2, outline); // START ROW -5
+  SetLights(x + 5, y - 5, 2, outline);
+  SetLights(x - 7, y - 4, 2, outline); // START ROW -4
+  SetLights(x + 5, y - 4, 2, outline);
+  SetLights(x - 7, y - 3, 2, outline); // START ROW -3
+  SetLights(x + 5, y - 3, 2, outline);
+  SetLights(x - 7, y - 2, 2, outline); // START ROW -2
+  SetLights(x + 5, y - 2, 2, outline);
+  SetLights(x - 7, y - 1, 2, outline); // START ROW -1
+  SetLights(x + 5, y - 1, 2, outline);
+  SetLights(x - 7, y + 0, 2, outline); // START ROW +0
+  SetLights(x + 5, y + 0, 2, outline);
+  SetLights(x - 7, y + 1, 2, outline); // START ROW +1
+  SetLights(x + 5, y + 1, 2, outline);
+  SetLights(x - 7, y + 2, 2, outline); // START ROW +2
+  SetLights(x + 5, y + 2, 2, outline);
+  SetLights(x - 7, y + 3, 2, outline); // START ROW +3
+  SetLights(x + 5, y + 3, 2, outline);
+  SetLights(x - 7, y + 4, 2, outline); // START ROW +4
+  SetLights(x + 5, y + 4, 2, outline);
+  SetLights(x - 7, y + 5, 14, outline); // START ROW +5
+  SetLights(x - 7, y + 6, 14, outline); // START ROW +6
 }
-
-
 
 void DisplayGhostEyes(byte ghostID = 0, byte dir = 3)
 {
@@ -5150,16 +5093,16 @@ void Tetris()
   static byte nextShape = 255;
   static byte nextColor = 0;
   
-  static byte xPos = 4;
-  static byte yPos = 1;
+  static byte xPos = 5;
+  static byte yPos = 0;
 
   if (nextShape == 255) DetermineNextTetrisShape(nextShape, nextColor);  
   if (currentShape == 255)
   {
     currentFacing = 0;
     IterateCurrentTetrisShape(currentShape, currentColor, nextShape, nextColor);
-    xPos = 4;
-    yPos = 1;
+    xPos = 5;
+    yPos = 0;
   }
 
   RenderTetrisShape(nextShape, nextColor, 0, 22, 6);
@@ -5197,8 +5140,8 @@ void Tetris()
       CheckForTetrisRowCleared();
 
       IterateCurrentTetrisShape(currentShape, currentColor, nextShape, nextColor);
-      xPos = 4;
-      yPos = 1;
+      xPos = 5;
+      yPos = 0;
       currentFacing = 0;
       if (!CheckTetrisSpace(TETRIS_BOARD_START_X + xPos, TETRIS_BOARD_START_Y + yPos, currentShape, currentFacing)) ShowTetrisFailureAnimation();
     }
@@ -5215,7 +5158,7 @@ inline void DeiteratePatternIndex(byte overrideIndex = 255)
     else patternIndex = overrideIndex;
     UpdateMillisOffset();
     STATIC_SCREEN_CLEAR();
-    if (patternIndex == TETRIS_INDEX) ResetTetris();
+    if (patternIndex == 0) ResetTetris();
 }
 
 inline void IteratePatternIndex(byte overrideIndex = 255)
@@ -5350,6 +5293,7 @@ void loop()
   {
     if (bitRead(NESRegister, SELECT_BUTTON) == 0)
     {
+      
       lastState = -1;
       buttonTimer = currentMillis + BUTTON_DELAY;
       DeiteratePatternIndex();
@@ -5364,7 +5308,7 @@ void loop()
 
   switch (patternIndex)
   {
-    case 0:  patternIndex = 14;                                                 break;
+    case 0:  patternIndex = 15;                                                 break;
     case 1:   SoundReact1();                                                    break;
     case 2:   SoundReact2();                                                    break;
     case 3:   SoundReactSpectrum();                                             break;
@@ -5379,7 +5323,7 @@ void loop()
     case 12:  ClearStrip(); MsPacManChompDanceThrough(6, 7); FastLED.show();    break;
     case 13:  ClearStrip(); SpaceInvaderDanceThrough(-6, 7); FastLED.show();    break;
     case 14:  ClearStrip(); HeartDanceThrough(); FastLED.show();                break;
-    //case 12:  Tetris();                                                       break;
+    case 15:  Tetris();                                                       break;
     default:  patternIndex = 1;                                                 break;
   }
 }
