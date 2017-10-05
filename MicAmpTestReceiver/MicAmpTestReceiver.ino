@@ -1,7 +1,7 @@
 
 #include <Wire.h>
 
-int x = 0;
+byte x = 0;
 
 void setup() {
   // Start the I2C Bus as Slave on address 9

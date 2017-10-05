@@ -11,7 +11,7 @@ int currState = 0;
 
 #define SOUND_IGNORE_MAX 10
 
-byte soundRating = 0; 
+unsigned int soundRating = 0; 
 const int sampleWindow = 15; // Sample window width in mS (50 mS = 20Hz)
 unsigned int sample;
  
@@ -33,7 +33,7 @@ void loop()
   unsigned int signalMax = 0;
   unsigned int signalMin = 1000;
   
-  // collect data for 50 mS
+  // collect data for 50 mSsoundRating
   while (millis() - startMillis < sampleWindow)
   {
     sample = analogRead(A0);
@@ -52,11 +52,12 @@ void loop()
   peakToPeak = signalMax - signalMin;  // max - min = peak-peak amplitude
   soundRating = max(min(byte(double(peakToPeak) / 4), 255), 0);
   if (soundRating < SOUND_IGNORE_MAX) soundRating = 0; //  Throw out anything too low to register
-  STATIC_SCREEN_CHECK(soundRating); //  Don't continue if nothing has changed
 
 #if DEBUG_OUTPUT
   Serial.println(soundRating);
 #endif
+
+  STATIC_SCREEN_CHECK(soundRating); //  Don't continue if nothing has changed
 
 #if WIRE_ENABLED
   Wire.beginTransmission(9);  // transmit to device #9
