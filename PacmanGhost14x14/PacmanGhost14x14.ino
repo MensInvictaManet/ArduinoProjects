@@ -41,6 +41,9 @@ unsigned long buttonTimer = 0;
 unsigned long millisOffset = 0;
 unsigned long nextFrameMillis = 0;
 byte patternIndex = 1;
+byte switchingIndex = 1;
+byte buttonIndex[6] = { 0, 0, 0, 0, 0, 0 };
+byte speedSetting = 5;
 
 byte soundLevel = 0;
 
@@ -548,18 +551,11 @@ void DisplayEDCSymbol(int x = 6, int y = 6, int outline = 0, int fontColor = 7, 
 void RainbowFlow1()
 {
   static int delayTime = 1;
-  static int hueChange = 2;
-  static bool deadEyes = false;
+  int hueChange = speedSetting;
+  bool deadEyes = (buttonIndex[1] & 1) ? true : false;
 
   if (IsNextFrameReady())
-  {
-    if (buttonTimer < currentMillis)
-    {
-      if (bitRead(NESRegister, B_BUTTON) == 0)    { deadEyes = !deadEyes; buttonTimer = currentMillis + BUTTON_DELAY; }
-      if (bitRead(NESRegister, DOWN_BUTTON) == 0) { hueChange -= 1; if (hueChange < 1)  hueChange = 1;  buttonTimer = currentMillis + BUTTON_DELAY; }
-      if (bitRead(NESRegister, UP_BUTTON) == 0)   { hueChange += 1; if (hueChange > 10) hueChange = 10; buttonTimer = currentMillis + BUTTON_DELAY; }
-    }
-    
+  {  
     static int hue = 0;
     hue += hueChange;
     fill_rainbow(leds, LED_COUNT, hue, -1);
@@ -574,20 +570,12 @@ void RainbowFlow1()
 void RainbowFlow2()
 {
   static int delayTime = 40;
-  static bool berzerk = false;
-  static int hueChange = 5;
-  static bool deadEyes = false;
+  bool berzerk = (buttonIndex[0] & 1) ? true : false;
+  bool deadEyes = (buttonIndex[1] & 1) ? true : false;
+  int hueChange = speedSetting;
   
   if (IsNextFrameReady())
   {
-    if (buttonTimer < currentMillis)
-    {
-      if (bitRead(NESRegister, A_BUTTON) == 0)    { berzerk = !berzerk;  buttonTimer = currentMillis + BUTTON_DELAY; }
-      if (bitRead(NESRegister, B_BUTTON) == 0)    { deadEyes = !deadEyes; buttonTimer = currentMillis + BUTTON_DELAY; }
-      if (bitRead(NESRegister, DOWN_BUTTON) == 0) { hueChange -= 1; if (hueChange < 1)  hueChange = 1;  buttonTimer = currentMillis + BUTTON_DELAY; }
-      if (bitRead(NESRegister, UP_BUTTON) == 0)   { hueChange += 1; if (hueChange > 10) hueChange = 10; buttonTimer = currentMillis + BUTTON_DELAY; }
-    }
-    
     static int rainbowPosition = 0;
     for (int i = 0; i < DIGITAL_LED_COUNT; ++i)
     {
@@ -607,15 +595,10 @@ void Fire(byte R, byte G, byte B)
 {
   static int delayTime = 25;
   static int hueChange = 15;
-  static bool deadEyes = false;
+  bool deadEyes = (buttonIndex[1] & 1) ? true : false;
 
   if (IsNextFrameReady())
   {
-    if (buttonTimer < currentMillis)
-    {
-      if (bitRead(NESRegister, B_BUTTON) == 0)    { deadEyes = !deadEyes; buttonTimer = currentMillis + BUTTON_DELAY; }
-    }
-    
     int r = R;
     int g = G;
     int b = B;
@@ -641,16 +624,10 @@ void Fire(byte R, byte G, byte B)
 
 void ColorFire()
 {
-  static byte colorChangeSpeed = 5;
+  byte colorChangeSpeed = speedSetting;
   static byte R = random(0, 256);
   static byte G = random(0, 256);
   static byte B = random(0, 256);
-  
-  if (buttonTimer < currentMillis)
-  {
-    if (bitRead(NESRegister, DOWN_BUTTON) == 0) { colorChangeSpeed -= 1; if (colorChangeSpeed < 1)  colorChangeSpeed = 1;  buttonTimer = currentMillis + BUTTON_DELAY; }
-    if (bitRead(NESRegister, UP_BUTTON) == 0)   { colorChangeSpeed += 1; if (colorChangeSpeed > 10) colorChangeSpeed = 10; buttonTimer = currentMillis + BUTTON_DELAY; }
-  }
     
   R += random(1, (colorChangeSpeed + 1) * 2);
   G += random(1, (colorChangeSpeed + 1) * 2);
@@ -684,19 +661,13 @@ void DisplaySquare(int x = 6, int y = 6, int w = 2, int h = 2, const CRGB& color
 
 void ColorEruption()
 {
-  static bool edcSymbol = false;
-  static bool deadEyes = false;
+  bool edcSymbol = (buttonIndex[0] & 1) ? true : false;
+  bool deadEyes = (buttonIndex[1] & 1) ? true : false;
   static byte centerColorIndex = random(0, 255);
-  const byte colorIterator = 20;
+  byte colorIterator = 20;
   
   if (IsNextFrameReady())
   {
-    if (buttonTimer < currentMillis)
-    {
-      if (bitRead(NESRegister, A_BUTTON) == 0)    { deadEyes = false; edcSymbol = !edcSymbol; buttonTimer = currentMillis + BUTTON_DELAY; }
-      if (bitRead(NESRegister, B_BUTTON) == 0)    { edcSymbol = false; deadEyes = !deadEyes; buttonTimer = currentMillis + BUTTON_DELAY; }
-    }
-
     ClearStrip();
 
     DisplaySquare(6, 6,  2,  2, Wheel(centerColorIndex + (colorIterator * 0)));
@@ -713,7 +684,7 @@ void ColorEruption()
     if (edcSymbol) DisplayEDCSymbol();
   
     FastLED.show();
-    nextFrameMillis += 166;
+    nextFrameMillis += 166 + (160 / speedSetting - 16); // 166 to 312
   }
 }
 
@@ -725,12 +696,7 @@ void GlowFlow(const int colorChangeSpeed = 1, const unsigned long changeDelay = 
   static unsigned long nextChangeTime = 0;
   static bool adding = false;
   
-  static bool deadEyes = false;
-  
-  if (buttonTimer < currentMillis)
-  {
-    if (bitRead(NESRegister, B_BUTTON) == 0)    { deadEyes = !deadEyes; buttonTimer = currentMillis + BUTTON_DELAY; }
-  }
+  bool deadEyes = (buttonIndex[1] & 1) ? true : false;
   
   adding = false;
   if (colorDelta.R > 0) { colorDelta.R -= colorChangeSpeed; colorCurrent.R = min(255, colorCurrent.R + colorChangeSpeed); adding = true; }
@@ -874,7 +840,7 @@ void DrawPacManChomp03(int x, int y, byte color)
   SetLights(x - 2, y + 6, 5, color); //  START ROW +6
 }
 
-void PacManChompDanceThrough(int x = -6, int y = 14, int frameLength = 46, int animationTime = 100)
+void PacManChompDanceThrough(int x = -6, int y = 14, int frameLength = 42, int animationTime = 100)
 {
   int frame = GetFrame(frameLength, animationTime);
   
@@ -1050,7 +1016,7 @@ void GhostShapeTest(int x = 0, int y = 0)
 
 void MsPacManChompDanceThrough(int x = 6, int y = 14)
 {
-  int frame = GetFrame(48, 120);
+  int frame = GetFrame(42, 120);
   
   if (frame % 8 == 0)       DrawMsPacManChomp01(PANEL_WIDTH - frame + x, y, 4, 1, 3);
   else if (frame % 8 == 1)  DrawMsPacManChomp02(PANEL_WIDTH - frame + x, y, 4, 1, 3);
@@ -1352,7 +1318,7 @@ void SoundReactSpectrum()
 {
   static int spectrumHeight[2][7];
   static bool fallToggle = false;
-  static bool rainbow = false;
+  bool rainbow = (buttonIndex[1] & 1) ? true : false;
   
   const int minSoundReactLevel = 50;
   byte soundLevelAltered = soundLevel > minSoundReactLevel ? ((((soundLevel / 25) * 25) - minSoundReactLevel) / 3) + minSoundReactLevel : soundLevel;
@@ -1360,11 +1326,6 @@ void SoundReactSpectrum()
 
   if (IsNextFrameReady())
   {
-    if (buttonTimer < currentMillis)
-    {
-      if (bitRead(NESRegister, B_BUTTON) == 0)      { rainbow = !rainbow; buttonTimer = currentMillis + BUTTON_DELAY; }
-    }
-    
     fallToggle = !fallToggle;
     ClearStrip();
     
@@ -1394,18 +1355,14 @@ void SoundReactSpectrum()
 
 void DisplayGhost(int x, int y)
 {
-  static byte ghostID = 0;
+  byte ghostID = (buttonIndex[1] % 7);
   static byte dir = 3;
-  CRGB ghostColor = CRGB::Black;
 
-  if (buttonTimer < currentMillis)
-  {
-    if (bitRead(NESRegister, B_BUTTON) == 0)      { ++ghostID; buttonTimer = currentMillis + BUTTON_DELAY; }
-    if (bitRead(NESRegister, UP_BUTTON) == 0)     { dir = 0; buttonTimer = currentMillis + BUTTON_DELAY; }
-    if (bitRead(NESRegister, DOWN_BUTTON) == 0)   { dir = 1; buttonTimer = currentMillis + BUTTON_DELAY; }
-    if (bitRead(NESRegister, LEFT_BUTTON) == 0)   { dir = 2; buttonTimer = currentMillis + BUTTON_DELAY; }
-    if (bitRead(NESRegister, RIGHT_BUTTON) == 0)  { dir = 3; buttonTimer = currentMillis + BUTTON_DELAY; }
-  }
+  if (buttonIndex[2] > 0) dir = 0;
+  if (buttonIndex[3] > 0) dir = 1;
+  if (buttonIndex[4] > 0) dir = 2;
+  if (buttonIndex[5] > 0) dir = 3;
+  buttonIndex[2] = buttonIndex[3] = buttonIndex[4] = buttonIndex[5] = 0;
   
   switch (ghostID)
   {
@@ -1424,8 +1381,6 @@ void DisplayGhost(int x, int y)
     default:    ghostID = 0;
                 SetStrip(CRGB(GetColor(1, 0), GetColor(1, 1), GetColor(1, 2)));        break;
   }
-
-// void DisplaySquare(int x = 6, int y = 6, int w = 2, int h = 2, const CRGB& color = CRGB::Black, bool full = false)
 
   //  Don't update the screen if nothing has changed
   STATIC_SCREEN_CHECK(int(ghostID + (dir << 4)));
@@ -1500,24 +1455,21 @@ void DrawSpaceInvader02(int x, int y, byte color1 = 7, byte color2 = 7)
 
 void SpaceInvaderDanceThrough(int x = -6, int y = 14, byte color1 = 7, byte color2 = 7)
 {
-  int frame = GetFrame(40);
+  int frame = GetFrame(30);
   
-  static bool berzerk = false;
-  static bool ninja_turtle = false;
-  static int ninja_turtle_color = 0;
-  static int ninja_turtle_color_index = 0;
+  bool berzerk = (buttonIndex[0] & 1) ? true : false;
+  bool ninja_turtle = (buttonIndex[1] & 1) ? true : false;
+  int ninja_turtle_color_index = (buttonIndex[1] % 8) / 2;
+  int ninja_turtle_color = GetNinjaColorIndex(ninja_turtle_color_index);
   static unsigned long berzerkTimer = 0;
   static byte berzerkColor = color1;
   
   static byte R = random(0, 256);
   static byte G = random(0, 256);
   static byte B = random(0, 256);
-  
-  if (buttonTimer < currentMillis)
-  {
-    if (bitRead(NESRegister, A_BUTTON) == 0) { ninja_turtle = false; berzerk = !berzerk;  buttonTimer = currentMillis + BUTTON_DELAY; }
-    if (bitRead(NESRegister, B_BUTTON) == 0) { berzerk = false; ninja_turtle = !ninja_turtle; if (ninja_turtle) { ninja_turtle_color = GetNinjaColorIndex(ninja_turtle_color_index); ninja_turtle_color_index++; } buttonTimer = currentMillis + BUTTON_DELAY; }
-  }
+
+  if (berzerk) { ninja_turtle = false; buttonIndex[1] = 0; }
+  if (ninja_turtle) { berzerk = false; buttonIndex[0] = 0; }
 
   if (berzerk)
   {
@@ -5113,22 +5065,26 @@ void Tetris()
     RenderTetrisShape(currentShape, 0, currentFacing, TETRIS_BOARD_START_X + xPos, TETRIS_BOARD_START_Y + yPos);
 
     //  Move left or right if the controller is polled with LEFT or RIGHT input
-    if (bitRead(NESRegister, LEFT_BUTTON) == 0)
+    if (buttonIndex[4] > 0) // LEFT
     {
+      buttonIndex[4] = 0;
       if (CheckTetrisSpace(TETRIS_BOARD_START_X + xPos - 1, TETRIS_BOARD_START_Y + yPos, currentShape, currentFacing)) xPos -= 1;
     }
-    if (bitRead(NESRegister, RIGHT_BUTTON) == 0)
+    if (buttonIndex[5] > 0) // RIGHT
     {
+      buttonIndex[5] = 0;
       if (CheckTetrisSpace(TETRIS_BOARD_START_X + xPos + 1, TETRIS_BOARD_START_Y + yPos, currentShape, currentFacing)) xPos += 1;
     }
-    if (bitRead(NESRegister, UP_BUTTON) == 0)
+    if (buttonIndex[2] > 0) // UP
     {
+      buttonIndex[2] = 0;
       int newFacing = currentFacing + 1;
       if (newFacing == 4) newFacing = 0;
       if (CheckTetrisSpace(TETRIS_BOARD_START_X + xPos, TETRIS_BOARD_START_Y + yPos + 1, currentShape, newFacing)) currentFacing = newFacing;
     }
-    if (bitRead(NESRegister, DOWN_BUTTON) == 0)
+    if (buttonIndex[3] > 0) // DOWN
     {
+      buttonIndex[3] = 0;
       if (CheckTetrisSpace(TETRIS_BOARD_START_X + xPos, TETRIS_BOARD_START_Y + yPos + 1, currentShape, currentFacing)) yPos += 2;
     }
 
@@ -5149,6 +5105,56 @@ void Tetris()
   }
 
   FastLED.show();
+}
+
+void PatternLoopThrough()
+{
+  static unsigned long nextPatternTime = 0;
+  if (millis() <= nextPatternTime) return;
+
+  UpdateMillisOffset();
+  ClearStrip();
+  switchingIndex = 2 + random(14);
+  if (switchingIndex == 0) ResetTetris();
+
+  Serial.print("Switching Index: ");
+  Serial.println(switchingIndex);
+  
+  switch (switchingIndex)
+  {
+    case 2:       nextPatternTime += 10000;     break;
+    case 3:       nextPatternTime += 10000;     break;
+    case 4:       nextPatternTime += 10000;     buttonIndex[1] = random(2); break;
+    case 5:       nextPatternTime += 10000;     buttonIndex[1] = random(7); buttonIndex[2] = buttonIndex[3] = buttonIndex[4] = 0; buttonIndex[5] = 1; break;
+    case 6:       nextPatternTime += 15000;     buttonIndex[1] = random(2); break;
+    case 7:       nextPatternTime += 10000;     buttonIndex[0] = random(2); buttonIndex[1] = random(2); break;
+    case 8:       nextPatternTime += 10000;     buttonIndex[1] = random(2); break;
+    case 9:       nextPatternTime += 10000;     buttonIndex[1] = random(2); break;
+    case 10:      nextPatternTime += 8000;      buttonIndex[0] = 0; buttonIndex[1] = random(2); break;
+    case 11:      nextPatternTime += 4200;      break;
+    case 12:      nextPatternTime += 12000;     break;
+    case 13:      nextPatternTime += 5040;      break;
+    case 14:      nextPatternTime += 9990;      break;
+    case 15:      nextPatternTime += 6400;      break;
+  }
+  
+  /*
+    case 2:   SoundReact1();                                                    break;
+    case 3:   SoundReact2();                                                    break;
+    case 4:   SoundReactSpectrum();                                             break;
+    case 5:   DisplayGhost(7, 7);                                               break;
+    case 6:   RainbowFlow1();                                                   break;
+    case 7:   RainbowFlow2();                                                   break;
+    case 8:   GlowFlow(10, 100);                                                break;
+    case 9:   ColorFire();                                                      break;
+    case 10:  ColorEruption();                                                  break;
+    case 11:  ClearStrip(); PacManChompDanceThrough(-6, 7); FastLED.show();     break;
+    case 12:  PacManChompDanceThroughPlusGhost(-6, 7);                          break;
+    case 13:  ClearStrip(); MsPacManChompDanceThrough(6, 7); FastLED.show();    break;
+    case 14:  ClearStrip(); SpaceInvaderDanceThrough(-6, 7); FastLED.show();    break;
+    case 15:  ClearStrip(); HeartDanceThrough(); FastLED.show();                break;
+    //case 16:  Tetris();                                                       break;
+   */
 }
 
 inline void DeiteratePatternIndex(byte overrideIndex = 255)
@@ -5283,6 +5289,31 @@ void setup()
   IteratePatternIndex(1);
 }
 
+void PatternSwitch(byte index)
+{
+  switch (index)
+  {
+    case 0:  patternIndex = 15;                                                 break;
+    case 1:   PatternLoopThrough();                                             break;
+    case 2:   SoundReact1();                                                    break;
+    case 3:   SoundReact2();                                                    break;
+    case 4:   SoundReactSpectrum();                                             break;
+    case 5:   DisplayGhost(7, 7);                                               break;
+    case 6:   RainbowFlow1();                                                   break;
+    case 7:   RainbowFlow2();                                                   break;
+    case 8:   GlowFlow(speedSetting, 100);                                      break;
+    case 9:   ColorFire();                                                      break;
+    case 10:  ColorEruption();                                                  break;
+    case 11:  ClearStrip(); PacManChompDanceThrough(-6, 7); FastLED.show();     break;
+    case 12:  PacManChompDanceThroughPlusGhost(-6, 7);                          break;
+    case 13:  ClearStrip(); MsPacManChompDanceThrough(6, 7); FastLED.show();    break;
+    case 14:  ClearStrip(); SpaceInvaderDanceThrough(-6, 7); FastLED.show();    break;
+    case 15:  ClearStrip(); HeartDanceThrough(); FastLED.show();                break;
+    //case 16:  Tetris();                                                       break;
+    default:  patternIndex = 1;                                                 break;
+  }
+}
+
 void loop()
 {
   currentMillis = millis();
@@ -5293,37 +5324,26 @@ void loop()
   {
     if (bitRead(NESRegister, SELECT_BUTTON) == 0)
     {
-      
       lastState = -1;
       buttonTimer = currentMillis + BUTTON_DELAY;
       DeiteratePatternIndex();
     }
+    
     if (bitRead(NESRegister, START_BUTTON) == 0)
     {
       lastState = -1;
       buttonTimer = currentMillis + BUTTON_DELAY;
       IteratePatternIndex();
     }
+
+    if (bitRead(NESRegister, A_BUTTON) == 0)      { buttonIndex[0] += 1; Serial.print("buttonIndex[0]: "); Serial.println(buttonIndex[0]); buttonTimer = currentMillis + BUTTON_DELAY; }
+    if (bitRead(NESRegister, B_BUTTON) == 0)      { buttonIndex[1] += 1; Serial.print("buttonIndex[1]: "); Serial.println(buttonIndex[1]); buttonTimer = currentMillis + BUTTON_DELAY; }
+    if (bitRead(NESRegister, UP_BUTTON) == 0)     { buttonIndex[2] += 1; speedSetting += 1; if (speedSetting > 10) speedSetting = 10; Serial.print("Speed Setting: "); Serial.println(speedSetting); buttonTimer = currentMillis + BUTTON_DELAY; }
+    if (bitRead(NESRegister, DOWN_BUTTON) == 0)   { buttonIndex[3] += 1; speedSetting -= 1; if (speedSetting < 1) speedSetting = 1; Serial.print("Speed Setting: "); Serial.println(speedSetting); buttonTimer = currentMillis + BUTTON_DELAY; }
+    if (bitRead(NESRegister, LEFT_BUTTON) == 0)   { buttonIndex[4] += 1; Serial.print("buttonIndex[4]: "); Serial.println(buttonIndex[4]); buttonTimer = currentMillis + BUTTON_DELAY; }
+    if (bitRead(NESRegister, RIGHT_BUTTON) == 0)  { buttonIndex[5] += 1; Serial.print("buttonIndex[5]: "); Serial.println(buttonIndex[5]); buttonTimer = currentMillis + BUTTON_DELAY; }
   }
 
-  switch (patternIndex)
-  {
-    case 0:  patternIndex = 15;                                                 break;
-    case 1:   SoundReact1();                                                    break;
-    case 2:   SoundReact2();                                                    break;
-    case 3:   SoundReactSpectrum();                                             break;
-    case 4:   DisplayGhost(7, 7);                                               break;
-    case 5:   RainbowFlow1();                                                   break;
-    case 6:   RainbowFlow2();                                                   break;
-    case 7:   GlowFlow(10, 100);                                                break;
-    case 8:   ColorFire();                                                      break;
-    case 9:   ColorEruption();                                                  break;
-    case 10:  ClearStrip(); PacManChompDanceThrough(-6, 7); FastLED.show();     break;
-    case 11:  PacManChompDanceThroughPlusGhost(-6, 7);                          break;
-    case 12:  ClearStrip(); MsPacManChompDanceThrough(6, 7); FastLED.show();    break;
-    case 13:  ClearStrip(); SpaceInvaderDanceThrough(-6, 7); FastLED.show();    break;
-    case 14:  ClearStrip(); HeartDanceThrough(); FastLED.show();                break;
-    case 15:  Tetris();                                                       break;
-    default:  patternIndex = 1;                                                 break;
-  }
+  if (patternIndex == 1) PatternSwitch(switchingIndex);
+  PatternSwitch(patternIndex);
 }
