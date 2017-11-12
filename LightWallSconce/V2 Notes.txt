@@ -1,0 +1,14 @@
+Notes for the next build, if I make one:
+
+1) The wire hold should be drilled in the side of the 3D printed sconce, so as to almost 
+   completely hide the wires instead of them being easily visible under each sconce.
+   
+2) I should at least attempt to wire the lights in sequence, though I may need wire thinner
+   than 26 Guage for that, since it'll mean 4 wires per sconce (except the last one)
+   
+3) A 3D printed heart-shaped container that fits onto the inner-most heart on the tealight
+   frame could contain all of the circuit and hide all wires, which would make the project
+   far more presentable.
+   
+4) The "PAUSE" button, in retrospect, is unnecessary. Even the secondary button that changes
+   sub-modes is undesired. Just the one button is fine. Consider changing to a switch, as well.
