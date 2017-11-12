@@ -5,15 +5,23 @@
 
 #define BUTTON_DELAY 500
 
-/* Connect the data line of the LED strip to pin 9. */
-#define LED_STRIP_PIN   10 
+/* Connect the data line of the LED strips to pins 5, 6, 7 ,8, 9, 10, 11, and 12. */
+#define LED_STRIP_PIN_1           5
+#define LED_STRIP_PIN_2           6
+#define LED_STRIP_PIN_3           7
+#define LED_STRIP_PIN_4           8
+#define LED_STRIP_PIN_5           9
+#define LED_STRIP_PIN_6           10
+#define LED_STRIP_PIN_7           11
+#define LED_STRIP_PIN_8           12
 
 #define PATTERN_BUTTON_PIN        2  //  The pin that controls the button signal
 #define SUBPATTERN_BUTTON_PIN     3  //  The pin that controls the button signal
 #define PAUSE_BUTTON_PIN          4  //  The pin that controls the button signal
 
-#define LIGHTS_PER_SCONCE   8
-#define LIGHT_SCONCE_COUNT  8
+#define LIGHTS_PER_SCONCE         7
+#define LIGHT_SCONCE_COUNT        8
+
 byte CurrentIndex = 0;
 byte CurrentMode = 0; // Modes = { RainbowFlow, MusicReact, BaseLight }
 byte CurrentSubMode = 0; // Modes = { RainbowFlow:{ RainbowSpread, RainbowCover }, MusicReact:{ BlackToWhite, BlackToColorSpread }, BaseLight:{ StillColor, Flash } }
@@ -27,7 +35,7 @@ CRGB leds[MAX_LEDS];
 int wireTransmission = 0;
 unsigned long ButtonTimer = 0;
 
-const unsigned long lightUpdateDelay = 250;
+const unsigned long lightUpdateDelay = 25;
 unsigned long lightUpdateTime = lightUpdateDelay;
 
 CRGB Wheel(byte wheelPosition)
@@ -125,7 +133,14 @@ void setup()
   pinMode(PAUSE_BUTTON_PIN, INPUT_PULLUP); // connect internal pull-up
   ButtonTimer = millis();
   
-  FastLED.addLeds<WS2811, LED_STRIP_PIN, GRB>(leds, MAX_LEDS).setCorrection( TypicalLEDStrip );
+  FastLED.addLeds<WS2811, LED_STRIP_PIN_1, GRB>(&leds[LIGHTS_PER_SCONCE * 0], LIGHTS_PER_SCONCE).setCorrection( TypicalLEDStrip );
+  FastLED.addLeds<WS2811, LED_STRIP_PIN_2, GRB>(&leds[LIGHTS_PER_SCONCE * 1], LIGHTS_PER_SCONCE).setCorrection( TypicalLEDStrip );
+  FastLED.addLeds<WS2811, LED_STRIP_PIN_3, GRB>(&leds[LIGHTS_PER_SCONCE * 2], LIGHTS_PER_SCONCE).setCorrection( TypicalLEDStrip );
+  FastLED.addLeds<WS2811, LED_STRIP_PIN_4, GRB>(&leds[LIGHTS_PER_SCONCE * 3], LIGHTS_PER_SCONCE).setCorrection( TypicalLEDStrip );
+  FastLED.addLeds<WS2811, LED_STRIP_PIN_5, GRB>(&leds[LIGHTS_PER_SCONCE * 4], LIGHTS_PER_SCONCE).setCorrection( TypicalLEDStrip );
+  FastLED.addLeds<WS2811, LED_STRIP_PIN_6, GRB>(&leds[LIGHTS_PER_SCONCE * 5], LIGHTS_PER_SCONCE).setCorrection( TypicalLEDStrip );
+  FastLED.addLeds<WS2811, LED_STRIP_PIN_7, GRB>(&leds[LIGHTS_PER_SCONCE * 6], LIGHTS_PER_SCONCE).setCorrection( TypicalLEDStrip );
+  FastLED.addLeds<WS2811, LED_STRIP_PIN_8, GRB>(&leds[LIGHTS_PER_SCONCE * 7], LIGHTS_PER_SCONCE).setCorrection( TypicalLEDStrip );
   FastLED.setBrightness(BRIGHTNESS);
   fillColor(CRGB::Black, true);
 
@@ -168,7 +183,7 @@ void loop()
   bool mode2Update = (millis() > 50);
   if (regularUpdate || ((CurrentMode == 1)  && mode2Update))
   {
-    if (!Paused && regularUpdate) CurrentIndex += 5;
+    if (!Paused && regularUpdate) CurrentIndex += 1;
     if (regularUpdate) lightUpdateTime += lightUpdateDelay;
     
     ControlLights();
