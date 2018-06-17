@@ -1,59 +1,35 @@
 #include <FastLED.h>
 
 ////////////////////////////////////////////////////////////////////////////////
-//  LED Strip primary settings                                                //
+//  LED Strip Primary Settings                                                //
 ////////////////////////////////////////////////////////////////////////////////
 
 #define LED_STRIP_TYPE  WS2812B   //  'WS2811' / 'WS2812' / 'WS2812B'
 #define COLOR_PATTERN   GRB       //  'RGB' for some light types, 'GRB' for others
 #define BRIGHTNESS      200       //  The number (0 to 200) for the brightness setting)
 #define NUM_LEDS        8         //  The number of LEDs we want to alter
-#define MAX_LEDS        NUM_LEDS  //  The number of LEDs on the full strip
 #define LED_STRIP_PIN   0         //  The LED strip data pin
 
 
 ////////////////////////////////////////////////////////////////////////////////
-//  Program settings                                                          //
+//  Program Data                                                              //
 ////////////////////////////////////////////////////////////////////////////////
 
-#define DEBUG_OUTPUT    0
-
-
-////////////////////////////////////////////////////////////////////////////////
-//  Program data                                                              //
-////////////////////////////////////////////////////////////////////////////////
-
-CRGB leds[MAX_LEDS];
-
-#define CRGB_PACMAN   CRGB(230, 240, 0)
-#define CRGB_BLINKY   CRGB::Red
-#define CRGB_PINKY    CRGB::Magenta
-#define CRGB_INKY     CRGB::Aqua
-#define CRGB_CLYDE    CRGB(255, 130, 0)
+CRGB leds[NUM_LEDS];
 
 
 ////////////////////////////////////////////////////////////////////////////////
-//  Utility methods                                                           //
+//  Utility Methods                                                           //
 ////////////////////////////////////////////////////////////////////////////////
 
-/*
- * Fills the strip with a single color, then displays the frame
- */
-void fillColor(CRGB color, bool fullStrip = false, bool render = true)
+void fillColor(CRGB color, bool render = true)
 {
-#if DEBUG_OUTPUT
-    Serial.print(String(color[0]) + " - " + String(color[1]) + " - " + String(color[2] + "\n");
-    delay(5);
-#endif
-
-    //  Set either NUM_LEDS or MAX_LEDS (depending on the given boolean) to the given color, then display the frame
-    for (int i = 0; i < (fullStrip ? MAX_LEDS : NUM_LEDS); i++) leds[i] = color;
+    //  Set all LEDs to the given color, then display the frame
+    for (int i = 0; i < NUM_LEDS; i++) leds[i] = color;
     if (render) FastLED.show();
 }
 
-/*
- * Fills the strip with a single color, waits a given amount of milliseconds, then switches the strip to black
- */
+
 void Blink(CRGB color, int milliWait = 750)
 {
     fillColor(color);
@@ -63,37 +39,43 @@ void Blink(CRGB color, int milliWait = 750)
 
 
 ////////////////////////////////////////////////////////////////////////////////
-//  Pattern methods                                                           //
+//  Pattern Methods                                                           //
 ////////////////////////////////////////////////////////////////////////////////
 
-void Pattern_PacmanChase()
+void Pattern_PacmanChase(CRGB* ledArray, unsigned int ledCount)
 {
+    static CRGB CRGB_PACMAN   = CRGB(230, 240, 0);
+    static CRGB CRGB_BLINKY   = CRGB::Red;
+    static CRGB CRGB_PINKY    = CRGB::Magenta;
+    static CRGB CRGB_INKY     = CRGB::Aqua;
+    static CRGB CRGB_CLYDE    = CRGB(255, 130, 0);
+
     const unsigned int delayFramesBefore = 1;
     const unsigned int delayFramesAfter = 1;
-    const unsigned int frameCount = 10 - 1 + NUM_LEDS;
+    const unsigned int frameCount = 10 - 1 + ledCount;
     const unsigned int fullFrameCount = delayFramesBefore + frameCount + delayFramesAfter;
     const unsigned long frameDelay = 200;
     const unsigned long currentFrame = millis() / frameDelay % fullFrameCount;
 
-    fillColor(CRGB::Black, false, false);
+    fillColor(CRGB::Black, false);
     if ((currentFrame >= delayFramesBefore) && (currentFrame < delayFramesBefore + frameCount))
     {
         unsigned int frameIndex = currentFrame - delayFramesBefore;
-        if ((frameIndex + 0 < NUM_LEDS) && (frameIndex + 0 >= 0)) leds[frameIndex + 0] = CRGB_PACMAN;
-        if ((frameIndex - 3 < NUM_LEDS) && (frameIndex - 3 >= 0)) leds[frameIndex - 3] = CRGB_BLINKY;
-        if ((frameIndex - 5 < NUM_LEDS) && (frameIndex - 5 >= 0)) leds[frameIndex - 5] = CRGB_PINKY;
-        if ((frameIndex - 7 < NUM_LEDS) && (frameIndex - 7 >= 0)) leds[frameIndex - 7] = CRGB_INKY;
-        if ((frameIndex - 9 < NUM_LEDS) && (frameIndex - 9 >= 0)) leds[frameIndex - 9] = CRGB_CLYDE;
+        if ((frameIndex + 0 < ledCount) && (frameIndex + 0 >= 0)) ledArray[frameIndex + 0] = CRGB_PACMAN;
+        if ((frameIndex - 3 < ledCount) && (frameIndex - 3 >= 0)) ledArray[frameIndex - 3] = CRGB_BLINKY;
+        if ((frameIndex - 5 < ledCount) && (frameIndex - 5 >= 0)) ledArray[frameIndex - 5] = CRGB_PINKY;
+        if ((frameIndex - 7 < ledCount) && (frameIndex - 7 >= 0)) ledArray[frameIndex - 7] = CRGB_INKY;
+        if ((frameIndex - 9 < ledCount) && (frameIndex - 9 >= 0)) ledArray[frameIndex - 9] = CRGB_CLYDE;
     }
     FastLED.show();
 }
 
-void Pattern_GlowFlow()
+void Pattern_GlowFlow(CRGB* ledArray, unsigned int ledCount)
 {
     const unsigned long delayTime = 125;
     const unsigned long hueChange = 1;
 
-    fill_rainbow(leds, NUM_LEDS, byte(millis() / delayTime * hueChange), -1);
+    fill_rainbow(ledArray, ledCount, byte(millis() / delayTime * hueChange), -1);
     FastLED.show();
 }
 
@@ -103,14 +85,10 @@ void Pattern_GlowFlow()
 
 void setup()
 {
-#if DEBUG_OUTPUT
-    Serial.begin(9600);
-#endif
-	
     //  Setup the LED strip and color all LEDs black
-    FastLED.addLeds<LED_STRIP_TYPE, LED_STRIP_PIN, COLOR_PATTERN>(leds, MAX_LEDS).setCorrection( TypicalLEDStrip );
+    FastLED.addLeds<LED_STRIP_TYPE, LED_STRIP_PIN, COLOR_PATTERN>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
     FastLED.setBrightness(BRIGHTNESS);
-    fillColor(CRGB::Black, true);
+    fillColor(CRGB::Black);
 
 #if DEBUG_OUTPUT
     Serial.println("Start Demo: Simple Read");
@@ -119,7 +97,7 @@ void setup()
 
 void loop()
 {
-    //Pattern_PacmanChase();
-    Pattern_GlowFlow();
+    Pattern_PacmanChase(leds, NUM_LEDS);
+    //Pattern_GlowFlow(leds, NUM_LEDS);
 }
 
