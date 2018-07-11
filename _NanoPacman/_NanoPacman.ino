@@ -1,25 +1,33 @@
 
 #include <FastLED.h>
-#include <LedControl.h>
 
 ////////////////////////////////////////
 ///////////// GAME DATA ////////////////
 ////////////////////////////////////////
 
-#define BRIDGE_LEVEL	10
-#define STEP_DELAY		132
-#define RUN_AWAY_TIMER	40
-#define CHASE_TIMER		300
-#define REVIVE_COUNTER	60
-#define ATTRACT_TIMER	1000
+#define DEBUG_OUTPUT      0
+#define DEBUG(output)     if (DEBUG_OUTPUT) Serial.println(output);
 
-#define MAP_W			24
-#define MAP_H			23
-#define XXX				0
+#define BRIDGE_LEVEL      10
+#define STEP_DELAY        132
+#define RUN_AWAY_TIMER    40
+#define CHASE_TIMER       300
+#define REVIVE_COUNTER    60
+#define ATTRACT_TIMER     1000
 
-#define COLOR_PACMAN	CRGB::Yellow
+#define MAP_W             24
+#define MAP_H             23
+#define XXX               0
 
-static const CRGB GhostColors[6] = { CRGB::Red, CRGB::Magenta, CRGB::Aquamarine, CRGB::DarkOrange, CRGB::DarkBlue, CRGB::DarkGray };
+#define COLOR_PACMAN	    0xFFFF00
+#define COLOR_BLINKY      0xFF0000
+#define COLOR_PINKY       0xFF00FF
+#define COLOR_INKY        0x00DFDF
+#define COLOR_CLYDE       0xE06000
+#define COLOR_VULNERABLE  0x00008B
+#define COLOR_DEADGHOST   0xA9A9A9
+
+static const long int GhostColors[4] = { COLOR_BLINKY, COLOR_PINKY, COLOR_INKY, COLOR_CLYDE };
 
 enum Direction
 {
@@ -109,60 +117,33 @@ Character Ghosts[4] = { Character(11, 8, 1, 0), Character(11, 8, 1, 0), Characte
 
 const PROGMEM byte LightMap[MAP_W * MAP_H] =
 {
-	  0,   1,   2,   3,   4,   5,   6,   7,   8,   9,  10, XXX, XXX,  11,  12,  13,  14,  15,  16,  17,  18,  19,  20,  21,
-	 33, XXX, XXX, XXX,  30, XXX, XXX, XXX, XXX, XXX,  29, XXX, XXX,  26, XXX, XXX, XXX, XXX, XXX,  25, XXX, XXX, XXX,  22,
-	 32, XXX, XXX, XXX,  31, XXX, XXX, XXX, XXX, XXX,  28, XXX, XXX,  27, XXX, XXX, XXX, XXX, XXX,  24, XXX, XXX, XXX,  23,
-	 34,  35,  36,  37,  38,  39,  40,  41,  42,  43,  44,  45,  46,  47,  48,  49,  50,  51,  52,  53,  54,  55,  56,  57,
-	 78, XXX, XXX, XXX,  84, XXX, XXX,  77, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX,  64, XXX, XXX, 100, XXX, XXX, XXX,  58,
-	 79, XXX, XXX, XXX,  85, XXX, XXX,  76, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX,  65, XXX, XXX, 101, XXX, XXX, XXX,  59,
-	 80,  81,  82,  83,  86, XXX, XXX,  75,  74,  73,  72, XXX, XXX,  69,  68,  67,  66, XXX, XXX, 102,  63,  62,  61,  60,
-	XXX, XXX, XXX, XXX,  87, XXX, XXX, XXX, XXX, XXX,  71, XXX, XXX,  70, XXX, XXX, XXX, XXX, XXX, 103, XXX, XXX, XXX, XXX,
-	XXX, XXX, XXX, XXX,  88, XXX, XXX,  90,  91,  92,  93,  94,  95,  96,  97,  98,  99, XXX, XXX, 104, XXX, XXX, XXX, XXX,
-	XXX, XXX, XXX, XXX,  89, XXX, XXX, 130, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX, 113, XXX, XXX, 105, XXX, XXX, XXX, XXX,
-	137, 136, 135, 134, 133, 132, 131, 129, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX, 114, 106, 107, 108, 109, 110, 111, 112,
-	XXX, XXX, XXX, XXX, 138, XXX, XXX, 128, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX, 115, XXX, XXX, 141, XXX, XXX, XXX, XXX,
-	XXX, XXX, XXX, XXX, 139, XXX, XXX, 127, 125, 124, 123, 122, 121, 120, 119, 118, 116, XXX, XXX, 142, XXX, XXX, XXX, XXX,
-	XXX, XXX, XXX, XXX, 140, XXX, XXX, 126, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX, 117, XXX, XXX, 143, XXX, XXX, XXX, XXX,
-	165, 164, 163, 162, 161, 160, 159, 158, 157, 156, 155, XXX, XXX, 154, 153, 152, 151, 150, 149, 148, 147, 146, 145, 144,
-	166, XXX, XXX, XXX, 172, XXX, XXX, XXX, XXX, XXX, 255, XXX, XXX, 252, XXX, XXX, XXX, XXX, XXX, 217, XXX, XXX, XXX, 218,
-	167, XXX, XXX, XXX, 173, XXX, XXX, XXX, XXX, XXX, 254, XXX, XXX, 253, XXX, XXX, XXX, XXX, XXX, 216, XXX, XXX, XXX, 219,
-	168, 169, XXX, XXX, 174, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 215, XXX, XXX, 221, 220,
-	XXX, 170, XXX, XXX, 175, XXX, XXX, 237, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX, 224, XXX, XXX, 214, XXX, XXX, 222, XXX,
-	XXX, 171, XXX, XXX, 176, XXX, XXX, 236, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX, 225, XXX, XXX, 213, XXX, XXX, 223, XXX,
-	181, 180, 179, 178, 177, XXX, XXX, 235, 234, 233, 232, XXX, XXX, 229, 228, 227, 226, XXX, XXX, 212, 211, 210, 209, 208,
-	182, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX, 231, XXX, XXX, 230, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX, 207,
-	183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206
+	239, 240, 241, 242, 243, 245, 246, 247, 248, 249, 250, XXX, XXX,   5,   4,   3,   2,   1,   0,  17,  18,  19,  20,  21,
+	238, XXX, XXX, XXX, 244, XXX, XXX, XXX, XXX, XXX, 251, XXX, XXX,   6, XXX, XXX, XXX, XXX, XXX,  16, XXX, XXX, XXX,  22,
+	237, XXX, XXX, XXX, 229, XXX, XXX, XXX, XXX, XXX, 252, XXX, XXX,   7, XXX, XXX, XXX, XXX, XXX,  15, XXX, XXX, XXX,  23,
+	236, 234, 233, 232, 230, 228, 227, 226, 225, 255, 254, 253,   8,   9,  10,  11,  12,  13,  14,  28,  27,  26,  25,  24,
+	235, XXX, XXX, XXX, 231, XXX, XXX, 224, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX,  55, XXX, XXX,  29, XXX, XXX, XXX,  36,
+	196, XXX, XXX, XXX, 200, XXX, XXX, 223, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX,  54, XXX, XXX,  30, XXX, XXX, XXX,  37,
+	195, 197, 198, 199, 201, XXX, XXX, 222, 221, 220, 219, XXX, XXX,  60,  59,  56,  53, XXX, XXX,  31,  33,  34,  35,  38,
+	XXX, XXX, XXX, XXX, 202, XXX, XXX, XXX, XXX, XXX, 218, XXX, XXX,  61, XXX, XXX, XXX, XXX, XXX,  32, XXX, XXX, XXX, XXX,
+	XXX, XXX, XXX, XXX, 203, XXX, XXX, 213, 214, 215, 216, 217,  63,  62,  58,  57,  52, XXX, XXX,  43, XXX, XXX, XXX, XXX,
+	XXX, XXX, XXX, XXX, 204, XXX, XXX, 212, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX,  51, XXX, XXX,  44, XXX, XXX, XXX, XXX,
+	194, 193, 192, 206, 205, 208, 209, 211, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX,  50,  48,  47,  45,  42,  41,  40,  39,
+	XXX, XXX, XXX, XXX, 207, XXX, XXX, 210, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX,  49, XXX, XXX,  46, XXX, XXX, XXX, XXX,
+	XXX, XXX, XXX, XXX, 163, XXX, XXX, 188, 187, 184, 183, 182,  64,  65,  66,  67,  68, XXX, XXX,  92, XXX, XXX, XXX, XXX,
+	XXX, XXX, XXX, XXX, 164, XXX, XXX, 189, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX,  69, XXX, XXX,  91, XXX, XXX, XXX, XXX,
+	159, 160, 161, 162, 166, 165, 191, 190, 186, 185, 181, XXX, XXX,  74,  73,  72,  71,  70,  89,  90,  93,  94,  95,  96,
+	158, XXX, XXX, XXX, 167, XXX, XXX, XXX, XXX, XXX, 180, XXX, XXX,  75, XXX, XXX, XXX, XXX, XXX,  88, XXX, XXX, XXX,  97,
+	157, XXX, XXX, XXX, 168, XXX, XXX, XXX, XXX, XXX, 179, XXX, XXX,  76, XXX, XXX, XXX, XXX, XXX,  87, XXX, XXX, XXX,  98,
+	156, 155, XXX, XXX, 169, 171, 172, 173, 175, 176, 177, 178,  77,  78,  79,  80,  82,  83,  84,  86, XXX, XXX, 100,  99,
+	XXX, 154, XXX, XXX, 170, XXX, XXX, 174, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX,  81, XXX, XXX,  85, XXX, XXX, 101, XXX,
+	XXX, 153, XXX, XXX, 143, XXX, XXX, 136, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX, 120, XXX, XXX, 112, XXX, XXX, 102, XXX,
+	151, 152, 145, 144, 142, XXX, XXX, 137, 135, 132, 131, XXX, XXX, 123, 122, 121, 119, XXX, XXX, 113, 111, 103, 104, 105,
+	150, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX, 130, XXX, XXX, 124, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX, 106,
+	149, 148, 147, 146, 141, 140, 139, 138, 134, 133, 129, 128, 127, 126, 125, 118, 117, 116, 115, 114, 110, 109, 108, 107
 };
 
 //  Dot Types: 0 (No Dot), 1 (Basic Dot), 2 (Power Pill)
-const PROGMEM byte PillColor[5] = { 40, 255, 128, 0, 128 };
-const PROGMEM byte DefaultDotMap[MAP_W * MAP_H] = 
-{
-	1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1,	// 24
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 48
-	2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, // 72
-	0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, // 96
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 120
-	1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, // 144
-	0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, // 168
-	0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, // 192
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 216
-	0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, // 240
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 264
-	0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, // 288
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 312
-	0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, // 336
-	0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, // 360
-	1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, // 384
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 408
-	2, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 2, // 432
-	0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, // 456
-	0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, // 480
-	0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, // 504
-	
-	1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, // 528
-	0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, // 552
-};
+const PROGMEM byte PillColor[5] = { 60, 255, 128, 0, 128 };
 
 #define DEFAULT_DOT_COUNT 98
 const PROGMEM uint16_t DotPositions[DEFAULT_DOT_COUNT] =
@@ -195,7 +176,7 @@ const PROGMEM uint16_t DotPositions[DEFAULT_DOT_COUNT] =
 #define DEFAULT_PILL_COUNT 4
 const PROGMEM uint16_t PillPositions[DEFAULT_PILL_COUNT] = { 48, 71, 408, 431 };
 
-char GetDotIndex(int space)
+unsigned char GetDotIndexByPosition(int space)
 {
 	for (int i = 0; i < DEFAULT_DOT_COUNT; ++i)
 		if (pgm_read_word_near(DotPositions + i) == space) return i;
@@ -203,18 +184,22 @@ char GetDotIndex(int space)
 	for (int i = 0; i < DEFAULT_PILL_COUNT; ++i)
 		if (pgm_read_word_near(PillPositions + i) == space) return DEFAULT_DOT_COUNT + i;
 		
-	return -1;
+	return 255;
 }
 
 byte DotsRemainingByteFlag[13]; //  98 bits representing the Dots remaining. 4 bits representing the Power Pills. 2 bits unused. 
 
-inline bool IsMapPosition(unsigned char x, unsigned char y) 	{ return ((x == 0 && y == 0) || (pgm_read_byte_near(LightMap + (MAP_W * y) + x) != 0)); }
-bool CanMove(const Character& c, int x, int y)					{ return (((c.Y == BRIDGE_LEVEL) && ((c.X + x == -1) || c.X + x == MAP_W)) || ((c.X + x >= 0) && (c.X + x < MAP_W) && (c.Y + y >= 0) && (c.Y + y < MAP_H) && (IsMapPosition(c.X + x, c.Y + y)))); }
-inline bool CanContinue(const Character& c)						{ return CanMove(c, c.SpeedX, c.SpeedY); }
-inline bool CanTurn(const Character& c)							{ return (CanMove(c, c.SpeedY, c.SpeedX) || CanMove(c, -c.SpeedY, -c.SpeedX)); }
-inline void Move(Character& c)									{ c.X += c.SpeedX; c.Y += c.SpeedY; }
-inline bool IsAtOrigin(Character& c)							{ return (c.X == c.originX && c.Y == c.originY); }
-inline bool PacmanOnSpawn()										{ return ((Pacman.Y == 8) && (Pacman.X >= 7) && (Pacman.X <= 16)) || (Pacman.X == 10 && (Pacman.Y == 7 || Pacman.Y == 6)); }
+inline bool IsDotStillAtIndex(int dotIndex)                   { return (DotsRemainingByteFlag[dotIndex / 8] & (1 << (dotIndex % 8))); }
+inline void ClearDotAtIndex(int dotIndex)                     { DotsRemainingByteFlag[dotIndex / 8] ^= (1 << (dotIndex % 8)); }
+inline void ResetDotIndexMap()                                { for (int i = 0; i < 13; ++i) DotsRemainingByteFlag[i] = 255; }
+
+inline bool IsMapPosition(unsigned char x, unsigned char y) 	{ return ((x == 18 && y == 0) || (pgm_read_byte_near(LightMap + (MAP_W * y) + x) != 0)); }
+bool CanMove(const Character& c, int x, int y)					      { return (((c.Y == BRIDGE_LEVEL) && ((c.X + x == -1) || c.X + x == MAP_W)) || ((c.X + x >= 0) && (c.X + x < MAP_W) && (c.Y + y >= 0) && (c.Y + y < MAP_H) && (IsMapPosition(c.X + x, c.Y + y)))); }
+inline bool CanContinue(const Character& c)						        { return CanMove(c, c.SpeedX, c.SpeedY); }
+inline bool CanTurn(const Character& c)							          { return (CanMove(c, c.SpeedY, c.SpeedX) || CanMove(c, -c.SpeedY, -c.SpeedX)); }
+inline void Move(Character& c)									              { c.X += c.SpeedX; c.Y += c.SpeedY; }
+inline bool IsAtOrigin(Character& c)							            { return (c.X == c.originX && c.Y == c.originY); }
+inline bool PacmanOnSpawn()										                { return ((Pacman.Y == 8) && (Pacman.X >= 7) && (Pacman.X <= 16)) || (Pacman.X == 10 && (Pacman.Y == 7 || Pacman.Y == 6)); }
 
 inline void Left(Character& c, int& speedX, int& speedY)
 {
@@ -360,12 +345,13 @@ int DotCount = 0;
 //  NOTE: Pause and display the cause of death before the flashes, and when you win
 //  NOTE: Death sequence... fade from pacman to the color of the ghost that ate him? No flash?
 
-#define LED_STRIP_PIN   10	//  The NeoPixel string data pin
-#define BUTTON_PIN		2	//  The pin that controls the button signal
-#define Button_U 		3
-#define Button_D 		4
-#define Button_L 		5
-#define Button_R 		6
+#define LED_STRIP_PIN     10	//  The NeoPixel string data pin
+#define BUTTON_F          6   //  The pin that controls the fire button signal
+#define Button_U          2   //  The pin that controls the UP button signal
+#define Button_D          3   //  The pin that controls the DOWN button signal
+#define Button_L          4   //  The pin that controls the LEFT button signal
+#define Button_R          5   //  The pin that controls the RIGHT button signal
+#define Joystick_Ground   7   //  The grounding wire for the controller
 
 const uint16_t BUTTON_POWER = 0xD827; // i.e. 0x10EFD827
 const uint16_t BUTTON_A = 0xF807;
@@ -377,11 +363,10 @@ const uint16_t BUTTON_LEFT = 0x10EF;
 const uint16_t BUTTON_RIGHT = 0x807F;
 const uint16_t BUTTON_CIRCLE = 0x20DF;
 
-#define NUM_LEDS		256	//  The number of LEDs we want to access
-#define BRIGHTNESS  	80	//  The number (0 to 200) for the brightness setting)
+#define NUM_LEDS		  256	//  The number of LEDs we want to access
+#define BRIGHTNESS  	200	//  The number (0 to 200) for the brightness setting)
 
-CRGB 	leds[NUM_LEDS];
-#define FILL_COLOR(color)		memset(leds, color, sizeof(CRGB) * NUM_LEDS);
+CRGB leds[NUM_LEDS];
 
 unsigned long turnMillis = 0;
 Direction controllerDirection;
@@ -390,30 +375,32 @@ bool ghostRunAwayDelay = false;
 char directionTimers[4];
 char ghostBlink = 0;
 char powerPillBlink = 0;
-bool attractMode = false;
+bool attractMode = true;
 
-LedControl sevenSeg = LedControl(7,8,9,1);
+//LedControl sevenSeg = LedControl(7,8,9,1);
+
+inline void FillColor(long int color) { memset(leds, color, sizeof(struct CRGB) * NUM_LEDS); }
 
 void setScoreDisplay(int score, int level)
 {
 	if (!attractMode)
 	{
-		sevenSeg.clearDisplay(0);
+		//sevenSeg.clearDisplay(0);
 		
 		//  Show the score, from 0 to 9999
 		score = min(9999, score);
-		if (score >= 0)				sevenSeg.setDigit(0, 0, score % 10, false);
-		if (score >= 10)			sevenSeg.setDigit(0, 1, (score % 100 - score % 10) / 10, false);
-		if (score >= 100)			sevenSeg.setDigit(0, 2, (score % 1000 - score % 100) / 100, false);
-		if (score >= 1000)			sevenSeg.setDigit(0, 3, (score % 10000 - score % 1000) / 1000, false);
+		//if (score >= 0)				sevenSeg.setDigit(0, 0, score % 10, false);
+		//if (score >= 10)			sevenSeg.setDigit(0, 1, (score % 100 - score % 10) / 10, false);
+		//if (score >= 100)			sevenSeg.setDigit(0, 2, (score % 1000 - score % 100) / 100, false);
+		//if (score >= 1000)			sevenSeg.setDigit(0, 3, (score % 10000 - score % 1000) / 1000, false);
 		
 		//  Show the level, from 1 to 9
 		level = min(8, level) + 1;
-		if (level >= 0)				sevenSeg.setDigit(0, 7, level, false);
+		//if (level >= 0)				sevenSeg.setDigit(0, 7, level, false);
 	}
 	else
 	{
-		sevenSeg.clearDisplay(0);
+		//sevenSeg.clearDisplay(0);
 	}
 }
 
@@ -430,13 +417,13 @@ void StepForward()
 void AttractModeTransition()
 {
 	//  Set all LEDs to white, then render
-	FILL_COLOR(0x151515);
+	FillColor(0x151515);
 	FastLED.show();
 	delay(250);
 	DrawMap();
 	FastLED.show();
 	delay(250);
-	FILL_COLOR(0x151515);
+	FillColor(0x151515);
 	FastLED.show();
 	delay(250);
 	StepForwardAllTheWay();
@@ -449,17 +436,17 @@ void WinTransition()
 	DrawMap();
 	FastLED.show();
 	delay(750);
-	FILL_COLOR(0x151515);
+	FillColor(0x151515);
 	FastLED.show();
 	delay(250);
 	DrawMap();
 	delay(250);
-	FILL_COLOR(0x151515);
+	FillColor(0x151515);
 	FastLED.show();
 	delay(250);
 	DrawMap();
 	delay(250);
-	FILL_COLOR(0x151515);
+	FillColor(0x151515);
 	FastLED.show();
 	delay(500);
 	StepForwardAllTheWay();
@@ -472,17 +459,17 @@ void DeathTransition()
 	DrawMap();
 	FastLED.show();
 	delay(750);
-	FILL_COLOR(0x151515);
+	FillColor(0x151515);
 	FastLED.show();
 	delay(250);
 	DrawMap();
 	delay(250);
-	FILL_COLOR(0x151515);
+	FillColor(0x151515);
 	FastLED.show();
 	delay(250);
 	DrawMap();
 	delay(250);
-	FILL_COLOR(0x151515);
+	FillColor(0x151515);
 	FastLED.show();
 	delay(500);
 	StepForwardAllTheWay();
@@ -492,7 +479,7 @@ void DeathTransition()
 void EatTransition()
 {
 	//  Set all LEDs to white, then render
-	FILL_COLOR(0x151515);
+	FillColor(0x151515);
 	FastLED.show();
 	delay(250);
 	StepForwardAllTheWay();
@@ -528,29 +515,29 @@ void CheckForDeath()
 
 void ResetMap()
 {
-	//  Reset the dots on the map
-	DotsCollected = 0;
-	Score = 0;
-	setScoreDisplay(Score, Level);
-	Level = 0;
-	for (int i = 0; i < 13; ++i) DotsRemainingByteFlag[i] = 255; //  Set all dots and power pills to be active according to the bit flag
-	
-	Pacman.X = 12;
-	Pacman.Y = 17;
-	Pacman.SpeedX = 0;
-	Pacman.SpeedY = 0;
+    //  Reset the dots on the map
+    DotsCollected = 0;
+    Score = 0;
+    setScoreDisplay(Score, Level);
+    Level = 0;
+    ResetDotIndexMap();  //  Set all dots and power pills to be active according to the bit flag
+    
+    Pacman.X = 12;
+    Pacman.Y = 17;
+    Pacman.SpeedX = 0;
+    Pacman.SpeedY = 0;
 
-	//  Reset all ghosts, and set only the first to active
-	for (int i = 0; i < 4; ++i) Ghosts[i].Reset(false);
-	
-	SetControllerDirection(DIRECTION_NONE);
+    //  Reset all ghosts, and set only the first to active
+    for (int i = 0; i < 4; ++i) Ghosts[i].Reset(false);
+    
+    SetControllerDirection(DIRECTION_NONE);
 }
 
 void DetermineGhostsReleased()
 {
 	if (PacmanOnSpawn())
 	{
-		Serial.println("Can't spawn while Pacman is in the spawn area.");
+		DEBUG("Can't spawn while Pacman is in the spawn area.");
 		return;
 	}
 	
@@ -756,10 +743,10 @@ void DetermineGhostDirections()
 			
 		case BEHAVIOR_EATEN:
 			{
-				Serial.println("Behavior: EATEN"); // DEBUG
+				DEBUG("Behavior: EATEN"); // DEBUG
 				if (IsAtOrigin(Ghosts[i]) && ++Ghosts[i].BehaviorCounter >= REVIVE_COUNTER && !PacmanOnSpawn())
 				{
-					Serial.println("Behavior: RANDOM"); // DEBUG
+					DEBUG("Behavior: RANDOM"); // DEBUG
 					Ghosts[i].Behavior = BEHAVIOR_RANDOM;
 				}
 				
@@ -845,26 +832,23 @@ void DetermineCharacterPositions()
 		CheckForDeath(); //  We check twice instead of just at the end because if we only check after everyone moves, they could move right past each other, swapping spots.
 	
 		//  If Pacman is on a dot, take it and up the score
-		int dotIndex = -1;
-		if ((dotIndex = GetDotIndex((MAP_W * Pacman.Y) + Pacman.X)) != -1)
+		unsigned char dotIndex = GetDotIndexByPosition((MAP_W * Pacman.Y) + Pacman.X);
+		if (dotIndex != 255 && IsDotStillAtIndex(dotIndex))
 		{
-			if (DotsRemainingByteFlag[dotIndex / 8] & (1 << (dotIndex % 8)))
+			if (dotIndex >= DEFAULT_DOT_COUNT) PowerPill();
+      ClearDotAtIndex(dotIndex);
+			Score++;
+			setScoreDisplay(Score, Level);
+			if ((++DotsCollected) == (DEFAULT_DOT_COUNT + DEFAULT_PILL_COUNT))
 			{
-				if (dotIndex >= DEFAULT_DOT_COUNT) PowerPill();
-				DotsRemainingByteFlag[dotIndex / 8] ^= (1 << (dotIndex % 8));
-				Score++;
+				//  The dots are gone. Reset the game and up the WinTransition
+				int level = Level;
+				int score = Score;
+				WinTransition();
+				ResetMap();
+				Level = ++level;
+				Score = score;
 				setScoreDisplay(Score, Level);
-				if ((++DotsCollected) == (DEFAULT_DOT_COUNT + DEFAULT_PILL_COUNT))
-				{
-					//  The dots are gone. Reset the game and up the WinTransition
-					int level = Level;
-					int score = Score;
-					WinTransition();
-					ResetMap();
-					Level = ++level;
-					Score = score;
-					setScoreDisplay(Score, Level);
-				}
 			}
 		}
 	}
@@ -876,22 +860,34 @@ void DrawMap()
 	if (++powerPillBlink == 4) powerPillBlink = 0;
 	
 	//  Set all LEDs to black
-	FILL_COLOR(CRGB::Black);
+	FillColor(0x000000);
 	
 	//  Draw all of the dots
-	static byte dotColor = 0;
+	static byte dotColorIndex = 0;
 	static byte powerPillFrame = 0;
 	static char dotIndex = -1;
 	
 	for (int i = 0; i < MAP_W * MAP_H; ++i)
 	{
-		dotColor = 0;
-		if ((dotIndex = GetDotIndex(i)) == -1) continue;
-		if (!(DotsRemainingByteFlag[dotIndex / 8] & (1 << (dotIndex % 8)))) continue;
-		dotColor = ((dotIndex < DEFAULT_DOT_COUNT) ? 0 : (1 + powerPillBlink));
-		
-		leds[pgm_read_byte_near(LightMap + i)].setRGB(pgm_read_byte_near(PillColor + dotColor - 1), pgm_read_byte_near(PillColor + dotColor - 1), pgm_read_byte_near(PillColor + dotColor - 1));
+		dotColorIndex = 0;
+		if ((dotIndex = GetDotIndexByPosition(i)) == -1) continue;
+    if (!IsDotStillAtIndex(dotIndex)) continue;
+		dotColorIndex = ((dotIndex < DEFAULT_DOT_COUNT) ? 0 : (1 + powerPillBlink));
+
+    byte pillColorTone = pgm_read_byte_near(PillColor + dotColorIndex);
+		leds[pgm_read_byte_near(LightMap + i)].setRGB(pillColorTone, pillColorTone, pillColorTone);
 	}
+
+/*
+ Ghosts[0].X = 7;
+ Ghosts[0].Y = 8;
+ Ghosts[1].X = 10;
+ Ghosts[1].Y = 8;
+ Ghosts[2].X = 13;
+ Ghosts[2].Y = 8;
+ Ghosts[3].X = 16;
+ Ghosts[3].Y = 8;
+ */
 	
 	//  Draw all active ghosts
 	for (char i = 0; i < 4; ++i)
@@ -902,7 +898,7 @@ void DrawMap()
 		bool runningAway = (Ghosts[i].Behavior == BEHAVIOR_RUN_AWAY);
 		bool blinking = (runningAway && Ghosts[i].BehaviorCounter > (RUN_AWAY_TIMER / 2));
 		bool blinkWhite = (blinking && (ghostBlink > 1));
-		CRGB color = ((eaten || blinkWhite) ? GhostColors[5] : (!runningAway ? GhostColors[i] : GhostColors[4]));
+		long int color = ((eaten || blinkWhite) ? COLOR_DEADGHOST : (runningAway ? COLOR_VULNERABLE : GhostColors[i]));
 		leds[pgm_read_byte_near(LightMap + (MAP_W * Ghosts[i].Y) + Ghosts[i].X)] = color;
 	}
 
@@ -913,22 +909,39 @@ void DrawMap()
 	FastLED.show();
 }
 
+void CheckForAttractToggle()
+{
+    static unsigned long buttonAttractTimer = 0;
+    if (digitalRead(BUTTON_F) == LOW)
+    {
+        if (buttonAttractTimer == 0) buttonAttractTimer = millis();
+        else if (millis() - buttonAttractTimer > ATTRACT_TIMER)
+        {
+            if (attractMode) AttractModeTransition();
+            attractMode = !attractMode;
+            ResetMap();
+            buttonAttractTimer = 0;
+        }
+    }
+    else buttonAttractTimer = 0;
+}
+
 void setup()
 {
 	Serial.begin(115200);
-	Serial.println("Pac-Man: START");
+	DEBUG("Pac-Man: START");
 	
 	randomSeed(analogRead(0));
 
 	// Setup the LED strip and color all LEDs black
-	FastLED.addLeds<WS2811, LED_STRIP_PIN, GRB>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
+	FastLED.addLeds<WS2811, LED_STRIP_PIN, RGB>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
 	FastLED.setBrightness(BRIGHTNESS);
-	FILL_COLOR(CRGB::Black);
+	FillColor(0x000000);
 	FastLED.show();
 
 	//  Enable the reset button input pin
-	pinMode(BUTTON_PIN, INPUT_PULLUP);
-	//digitalWrite(BUTTON_PIN, HIGH); //Enable the pull-up resistor
+	pinMode(BUTTON_F, INPUT_PULLUP);
+	//digitalWrite(BUTTON_F, HIGH); //Enable the pull-up resistor
 
 	//  Enable the joystick input pins
 	pinMode(Button_U, INPUT);
@@ -939,33 +952,23 @@ void setup()
 	digitalWrite(Button_L, HIGH); //Enable the pull-up resistor
 	pinMode(Button_R, INPUT);
 	digitalWrite(Button_R, HIGH); //Enable the pull-up resistor
+  pinMode(Joystick_Ground, OUTPUT);
+  digitalWrite(Joystick_Ground, LOW);
 	
 	for (char i = 0; i < 4; ++i) directionTimers[i] = 0;
 
-	sevenSeg.shutdown(0, false);
+	//sevenSeg.shutdown(0, false);
 	/* Set the brightness to a medium values */
-	sevenSeg.setIntensity(0,8);
+	//sevenSeg.setIntensity(0,8);
 	/* and clear the display */
-	sevenSeg.clearDisplay(0);
+	//sevenSeg.clearDisplay(0);
 
 	ResetMap();
 }
 
 void loop()
 {
-	static unsigned long buttonAttractTimer = 0;
-	if (digitalRead(BUTTON_PIN) == LOW)
-	{
-		if (buttonAttractTimer == 0) buttonAttractTimer = millis();
-		else if (millis() - buttonAttractTimer > ATTRACT_TIMER)
-		{
-			if (attractMode) AttractModeTransition();
-			attractMode = !attractMode;
-			ResetMap();
-			buttonAttractTimer = 0;
-		}
-	}
-	else buttonAttractTimer = 0;
+  CheckForAttractToggle();
 
 	if (millis() >= turnMillis)
 	{
