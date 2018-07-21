@@ -1,5 +1,5 @@
-
 #include <FastLED.h>
+#include <Wire.h>
 
 ////////////////////////////////////////
 ///////////// GAME DATA ////////////////
@@ -381,27 +381,18 @@ bool attractMode = true;
 
 inline void FillColor(long int color) { memset(leds, color, sizeof(struct CRGB) * NUM_LEDS); }
 
-void setScoreDisplay(int score, int level)
+void setScoreDisplay(long score, int level)
 {
-	if (!attractMode)
-	{
-		//sevenSeg.clearDisplay(0);
-		
-		//  Show the score, from 0 to 9999
-		score = min(9999, score);
-		//if (score >= 0)				sevenSeg.setDigit(0, 0, score % 10, false);
-		//if (score >= 10)			sevenSeg.setDigit(0, 1, (score % 100 - score % 10) / 10, false);
-		//if (score >= 100)			sevenSeg.setDigit(0, 2, (score % 1000 - score % 100) / 100, false);
-		//if (score >= 1000)			sevenSeg.setDigit(0, 3, (score % 10000 - score % 1000) / 1000, false);
-		
-		//  Show the level, from 1 to 9
-		level = min(8, level) + 1;
-		//if (level >= 0)				sevenSeg.setDigit(0, 7, level, false);
-	}
-	else
-	{
-		//sevenSeg.clearDisplay(0);
-	}
+  if (score < 0)      return;
+  if (score > 99999)  return;
+
+  Serial.println("Score: " + String(score));
+
+ score = min(9999, score);
+  //  Send the current score to the scoreboard controller over i2c
+  Wire.beginTransmission(0x60);
+  Wire.write((const char*)&score, 4);                
+  Wire.endTransmission();   
 }
 
 void StepForwardAllTheWay()
@@ -928,6 +919,8 @@ void CheckForAttractToggle()
 
 void setup()
 {
+  Wire.begin();
+  
 	Serial.begin(115200);
 	DEBUG("Pac-Man: START");
 	
