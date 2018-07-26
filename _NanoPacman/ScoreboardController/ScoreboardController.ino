@@ -5,11 +5,11 @@ int digitPinList[5][8] =
   { 2, 3, 4, 5, 34, 35, 36, 37 },
   { 6, 7, 8, 9, 38, 39, 40, 41 },
   { 10, 11, 12, 14, 42, 43, 44, 45 },
-  { 26, 27, 28, 29, 46, 47, 48, 49 },
-  { 30, 31, 32, 33, 50, 51, 52, 53 }
+  { 26, 27, 31, 29, 46, 47, 48, 49 },
+  { 30, 28, 32, 33, 50, 51, 52, 53 }
 };
 
-int pinsIndicesStartToFinish[8] = { 0, 7, 3, 6, 2, 5, 1, 4 };
+int pinsIndicesStartToFinish[8] = { 0, 4, 1, 3, 2, 5, 6, 7 };
 
 void ClearDigit(int digitIndex)
 {
@@ -38,13 +38,28 @@ void DisplayNumberOnDigit(int digitIndex, long number)
 
 void SetPins(int digitIndex, int pinG, int pin1, int pin2, int pin3, int pin4, int pin5, int pin6, int pin7)
 {
-  pinMode(digitPinList[digitIndex][pinsIndicesStartToFinish[0]], OUTPUT);    digitalWrite(digitPinList[digitIndex][pinsIndicesStartToFinish[0]], pinG);
-  pinMode(digitPinList[digitIndex][pinsIndicesStartToFinish[1]], OUTPUT);    digitalWrite(digitPinList[digitIndex][pinsIndicesStartToFinish[1]], pin1);
+  if (pinG == -1) pinMode(digitPinList[digitIndex][pinsIndicesStartToFinish[0]], INPUT);
+  else pinMode(digitPinList[digitIndex][pinsIndicesStartToFinish[0]], OUTPUT);    digitalWrite(digitPinList[digitIndex][pinsIndicesStartToFinish[0]], pinG);
+  
+  if (pin1 == -1) pinMode(digitPinList[digitIndex][pinsIndicesStartToFinish[1]], INPUT);
+  else pinMode(digitPinList[digitIndex][pinsIndicesStartToFinish[1]], OUTPUT);    digitalWrite(digitPinList[digitIndex][pinsIndicesStartToFinish[1]], pin1);
+  
+  if (pin2 == -1) pinMode(digitPinList[digitIndex][pinsIndicesStartToFinish[2]], INPUT);
   pinMode(digitPinList[digitIndex][pinsIndicesStartToFinish[2]], OUTPUT);    digitalWrite(digitPinList[digitIndex][pinsIndicesStartToFinish[2]], pin2);
+  
+  if (pin3 == -1) pinMode(digitPinList[digitIndex][pinsIndicesStartToFinish[3]], INPUT);
   pinMode(digitPinList[digitIndex][pinsIndicesStartToFinish[3]], OUTPUT);    digitalWrite(digitPinList[digitIndex][pinsIndicesStartToFinish[3]], pin3);
+  
+  if (pin4 == -1) pinMode(digitPinList[digitIndex][pinsIndicesStartToFinish[4]], INPUT);
   pinMode(digitPinList[digitIndex][pinsIndicesStartToFinish[4]], OUTPUT);    digitalWrite(digitPinList[digitIndex][pinsIndicesStartToFinish[4]], pin4);
+  
+  if (pin5 == -1) pinMode(digitPinList[digitIndex][pinsIndicesStartToFinish[5]], INPUT);
   pinMode(digitPinList[digitIndex][pinsIndicesStartToFinish[5]], OUTPUT);    digitalWrite(digitPinList[digitIndex][pinsIndicesStartToFinish[5]], pin5);
+  
+  if (pin6 == -1) pinMode(digitPinList[digitIndex][pinsIndicesStartToFinish[6]], INPUT);
   pinMode(digitPinList[digitIndex][pinsIndicesStartToFinish[6]], OUTPUT);    digitalWrite(digitPinList[digitIndex][pinsIndicesStartToFinish[6]], pin6);
+  
+  if (pin7 == -1) pinMode(digitPinList[digitIndex][pinsIndicesStartToFinish[7]], INPUT);
   pinMode(digitPinList[digitIndex][pinsIndicesStartToFinish[7]], OUTPUT);    digitalWrite(digitPinList[digitIndex][pinsIndicesStartToFinish[7]], pin7);
 }
 
@@ -149,5 +164,39 @@ void setup() {
 }
 
 void loop() {
+  return;
+  SetPins(0, LOW, HIGH, HIGH, HIGH, HIGH, HIGH, HIGH, HIGH);
+  delay(1500);
+  SetPins(0, LOW, HIGH, LOW, LOW, LOW, LOW, LOW, LOW);
+  delay(1500);
+  SetPins(0, LOW, LOW, HIGH, LOW, LOW, LOW, LOW, LOW);
+  delay(1500);
+  SetPins(0, LOW, LOW, LOW, HIGH, LOW, LOW, LOW, LOW);
+  delay(1500);
+  SetPins(0, LOW, LOW, LOW, LOW, HIGH, LOW, LOW, LOW);
+  delay(1500);
+  SetPins(0, LOW, LOW, LOW, LOW, LOW, HIGH, LOW, LOW);
+  delay(1500);
+  SetPins(0, LOW, LOW, LOW, LOW, LOW, LOW, HIGH, LOW);
+  delay(1500);
+  SetPins(0, LOW, LOW, LOW, LOW, LOW, LOW, LOW, HIGH);
+  delay(1500);
+  return;
+  
+  ClearDigit(4);
+  DisplayNumberOnDigit(0, 8);
+  delay(500);
+  ClearDigit(0);
+  DisplayNumberOnDigit(1, 8);
+  delay(500);
+  ClearDigit(1);
+  DisplayNumberOnDigit(2, 8);
+  delay(500);
+  ClearDigit(2);
+  DisplayNumberOnDigit(3, 8);
+  delay(500);
+  ClearDigit(3);
+  DisplayNumberOnDigit(4, 8);
+  delay(500);
   //TestDigits();
 }
