@@ -42,7 +42,7 @@ void Blink(CRGB color, int milliWait = 750)
 //  Pattern Methods                                                           //
 ////////////////////////////////////////////////////////////////////////////////
 
-void Pattern_PacmanChase(CRGB* ledArray, unsigned int ledCount)
+void Pattern_PacmanChase(CRGB* ledArray, unsigned int ledCount, unsigned long delayTime = 200)
 {
     static CRGB CRGB_PACMAN   = CRGB(230, 240, 0);
     static CRGB CRGB_BLINKY   = CRGB::Red;
@@ -54,8 +54,7 @@ void Pattern_PacmanChase(CRGB* ledArray, unsigned int ledCount)
     const unsigned int delayFramesAfter = 1;
     const unsigned int frameCount = 10 - 1 + ledCount;
     const unsigned int fullFrameCount = delayFramesBefore + frameCount + delayFramesAfter;
-    const unsigned long frameDelay = 200;
-    const unsigned long currentFrame = millis() / frameDelay % fullFrameCount;
+    const unsigned long currentFrame = millis() / delayTime % fullFrameCount;
 
     fillColor(CRGB::Black, false);
     if ((currentFrame >= delayFramesBefore) && (currentFrame < delayFramesBefore + frameCount))
@@ -70,12 +69,15 @@ void Pattern_PacmanChase(CRGB* ledArray, unsigned int ledCount)
     FastLED.show();
 }
 
-void Pattern_GlowFlow(CRGB* ledArray, unsigned int ledCount)
+void Pattern_GlowFlow(CRGB* ledArray, unsigned int ledCount, unsigned long delayTime = 250, unsigned long hueChange = 1)
 {
-    const unsigned long delayTime = 125;
-    const unsigned long hueChange = 1;
-
     fill_rainbow(ledArray, ledCount, byte(millis() / delayTime * hueChange), -1);
+    FastLED.show();
+}
+
+void Pattern_BasicBlink(CRGB* ledArray, unsigned int ledCount, CRGB::HTMLColorCode color = CRGB::Red, unsigned long delayTime = 750)
+{
+    fill_solid(ledArray, ledCount, (millis() % (delayTime * 2) > delayTime) ? color : CRGB::Black);
     FastLED.show();
 }
 
@@ -97,7 +99,8 @@ void setup()
 
 void loop()
 {
-    Pattern_PacmanChase(leds, NUM_LEDS);
+    //Pattern_PacmanChase(leds, NUM_LEDS);
     //Pattern_GlowFlow(leds, NUM_LEDS);
+    Pattern_BasicBlink(leds, NUM_LEDS, CRGB::Red);
 }
 
