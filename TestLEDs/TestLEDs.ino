@@ -1,4 +1,5 @@
 #include <FastLED.h>
+#include <TrueRandom.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 //  LED Strip Primary Settings                                                //
@@ -79,6 +80,64 @@ void Pattern_BasicBlink(CRGB* ledArray, unsigned int ledCount, CRGB::HTMLColorCo
 {
     fill_solid(ledArray, ledCount, (millis() % (delayTime * 2) > delayTime) ? color : CRGB::Black);
     FastLED.show();
+}
+
+void Pattern_StarField()
+{
+    byte pixelState[NUM_LEDS];
+    CRGB pixelTargetColor[NUM_LEDS];
+    unsigned long pixelSettingTime[NUM_LEDS];
+    double pixelToColorTime[NUM_LEDS];
+    double percentage = 0.0;
+
+    for (int i = 0; i < NUM_LEDS; ++i)
+    {
+        pixelState[i] = 3;
+        pixelSettingTime[i] = millis();
+        pixelToColorTime[i] = TrueRandom.random(2000);
+    }
+
+    unsigned long startTime = millis();
+    while (millis() < startTime + 100000)
+    {
+        for (int i = 0; i < NUM_LEDS; ++i)
+        {
+            if (pixelState[i] == 0)
+            {
+                pixelTargetColor[i] = CRGB(TrueRandom.random(255), TrueRandom.random(255), TrueRandom.random(255));
+                delay(3);
+                pixelState[i] = 1;
+                pixelSettingTime[i] = millis();
+                pixelToColorTime[i] = 1000 + TrueRandom.random(1000);
+            }
+            else if (pixelState[i] == 1)
+            {
+                percentage = double(millis() - pixelSettingTime[i]);
+                if (percentage > pixelToColorTime[i]) percentage = pixelToColorTime[i];
+                percentage /= pixelToColorTime[i];
+                leds[i] = CRGB((pixelTargetColor[i].r * percentage), (pixelTargetColor[i].g * percentage), (pixelTargetColor[i].b * percentage));
+                if (millis() > pixelSettingTime[i] + (unsigned long)(pixelToColorTime[i])) pixelState[i] = 2;
+            }
+            else if (pixelState[i] == 2)
+            {
+                percentage = millis() - (pixelSettingTime[i] + (unsigned long)(pixelToColorTime[i]));
+                if (percentage > (unsigned long)(pixelToColorTime[i])) percentage = (unsigned long)(pixelToColorTime[i]);
+                percentage = double(percentage) / double(pixelToColorTime[i]);
+                leds[i] = CRGB(byte(pixelTargetColor[i].r * (1.0 - percentage)), byte(pixelTargetColor[i].g * (1.0 - percentage)), byte(pixelTargetColor[i].b * (1.0 - percentage)));
+                if (millis() > pixelSettingTime[i] + pixelToColorTime[i] * 2)
+                {
+                    pixelState[i] = 3;
+                    pixelSettingTime[i] = millis();
+                    pixelToColorTime[i] = TrueRandom.random(2000);
+                }
+            }
+            else if (pixelState[i] == 3)
+            {
+                if (millis() > pixelSettingTime[i] + (unsigned long)(pixelToColorTime[i])) pixelState[i] = 0;
+            }
+            FastLED.show();
+        }
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
