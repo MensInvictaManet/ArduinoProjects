@@ -13,7 +13,7 @@
 #define RUN_AWAY_TIMER    40
 #define CHASE_TIMER       300
 #define REVIVE_COUNTER    60
-#define ATTRACT_TIMER     1000
+#define ATTRACT_TIMER     20000
 
 #define MAP_W             24
 #define MAP_H             23
@@ -28,6 +28,7 @@
 #define COLOR_DEADGHOST   0xA9A9A9
 
 static const long int GhostColors[4] = { COLOR_BLINKY, COLOR_PINKY, COLOR_INKY, COLOR_CLYDE };
+static unsigned long int attractTimeout = 0;
 
 enum Direction
 {
@@ -346,22 +347,12 @@ int DotCount = 0;
 //  NOTE: Death sequence... fade from pacman to the color of the ghost that ate him? No flash?
 
 #define LED_STRIP_PIN     10	//  The NeoPixel string data pin
-#define BUTTON_F          6   //  The pin that controls the fire button signal
+#define Button_F          6   //  The pin that controls the fire button signal
 #define Button_U          2   //  The pin that controls the UP button signal
 #define Button_D          3   //  The pin that controls the DOWN button signal
 #define Button_L          4   //  The pin that controls the LEFT button signal
 #define Button_R          5   //  The pin that controls the RIGHT button signal
 #define Joystick_Ground   7   //  The grounding wire for the controller
-
-const uint16_t BUTTON_POWER = 0xD827; // i.e. 0x10EFD827
-const uint16_t BUTTON_A = 0xF807;
-const uint16_t BUTTON_B = 0x7887;
-const uint16_t BUTTON_C = 0x58A7;
-const uint16_t BUTTON_UP = 0xA05F;
-const uint16_t BUTTON_DOWN = 0x00FF;
-const uint16_t BUTTON_LEFT = 0x10EF;
-const uint16_t BUTTON_RIGHT = 0x807F;
-const uint16_t BUTTON_CIRCLE = 0x20DF;
 
 #define NUM_LEDS		  256	//  The number of LEDs we want to access
 #define BRIGHTNESS  	200	//  The number (0 to 200) for the brightness setting)
@@ -499,6 +490,9 @@ void CheckForDeath()
 				DeathTransition();
 				ResetMap();
 				setScoreDisplay(Score, Level);
+
+        //  If the player hasn't touched the controller within the attract timeout seconds and just died, return to attract mode
+        if (!attractMode && (millis() > attractTimeout)) attractMode = !attractMode;
 			}
 		}
 	}
@@ -617,7 +611,10 @@ void DetermineControllerDirection()
 	bool dirL = (digitalRead(Button_L) == 0);
 	bool dirR = (digitalRead(Button_R) == 0);
 
-	if 		(dirU && !dirD && !dirL && !dirR)	SetControllerDirection(DIRECTION_U);
+  //  If any button is pressed, reset the attractTimeout so that we don't move back into Attract Mode
+  if (dirU || dirD || dirL || dirR) attractTimeout = millis() + ATTRACT_TIMER;
+
+	if 		(dirU && !dirD && !dirL && !dirR)	  SetControllerDirection(DIRECTION_U);
 	else if (!dirU && dirD && !dirL && !dirR)	SetControllerDirection(DIRECTION_D);
 	else if (!dirU && !dirD && dirL && !dirR)	SetControllerDirection(DIRECTION_L);
 	else if (!dirU && !dirD && !dirL && dirR)	SetControllerDirection(DIRECTION_R);
@@ -902,19 +899,16 @@ void DrawMap()
 
 void CheckForAttractToggle()
 {
-    static unsigned long buttonAttractTimer = 0;
-    if (digitalRead(BUTTON_F) == LOW)
+    if (attractMode)
     {
-        if (buttonAttractTimer == 0) buttonAttractTimer = millis();
-        else if (millis() - buttonAttractTimer > ATTRACT_TIMER)
+        if ((digitalRead(Button_F) == LOW) || (digitalRead(Button_U) == LOW) || (digitalRead(Button_D) == LOW) || (digitalRead(Button_L) == LOW) || (digitalRead(Button_R) == LOW))
         {
-            if (attractMode) AttractModeTransition();
-            attractMode = !attractMode;
+            AttractModeTransition();
+            attractMode = false;
             ResetMap();
-            buttonAttractTimer = 0;
+            attractTimeout = millis() + ATTRACT_TIMER;
         }
     }
-    else buttonAttractTimer = 0;
 }
 
 void setup()
@@ -933,8 +927,8 @@ void setup()
 	FastLED.show();
 
 	//  Enable the reset button input pin
-	pinMode(BUTTON_F, INPUT_PULLUP);
-	//digitalWrite(BUTTON_F, HIGH); //Enable the pull-up resistor
+	pinMode(Button_F, INPUT_PULLUP);
+	//digitalWrite(Button_F, HIGH); //Enable the pull-up resistor
 
 	//  Enable the joystick input pins
 	pinMode(Button_U, INPUT);
