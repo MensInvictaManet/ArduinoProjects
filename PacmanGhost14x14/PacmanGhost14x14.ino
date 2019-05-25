@@ -29,9 +29,10 @@
 #define TETRIS_BOARD_WIDTH      10
 #define TETRIS_BOARD_HEIGHT     10
 
-#define TETRIS_INDEX            15       
+#define TETRIS_INDEX            15    
+#define NES_CONTROLLER_ENABLED  0   
 
-#define USING_WS2801            false
+#define USING_WS2801            true
 
 byte NESRegister = 0; //  We will use this to hold current button states
 
@@ -5317,31 +5318,34 @@ void PatternSwitch(byte index)
 void loop()
 {
   currentMillis = millis();
-  
-  readNesController();
-  
-  if (buttonTimer < currentMillis)
-  {
-    if (bitRead(NESRegister, SELECT_BUTTON) == 0)
-    {
-      lastState = -1;
-      buttonTimer = currentMillis + BUTTON_DELAY;
-      DeiteratePatternIndex();
-    }
-    
-    if (bitRead(NESRegister, START_BUTTON) == 0)
-    {
-      lastState = -1;
-      buttonTimer = currentMillis + BUTTON_DELAY;
-      IteratePatternIndex();
-    }
 
-    if (bitRead(NESRegister, A_BUTTON) == 0)      { buttonIndex[0] += 1; Serial.print("buttonIndex[0]: "); Serial.println(buttonIndex[0]); buttonTimer = currentMillis + BUTTON_DELAY; }
-    if (bitRead(NESRegister, B_BUTTON) == 0)      { buttonIndex[1] += 1; Serial.print("buttonIndex[1]: "); Serial.println(buttonIndex[1]); buttonTimer = currentMillis + BUTTON_DELAY; }
-    if (bitRead(NESRegister, UP_BUTTON) == 0)     { buttonIndex[2] += 1; speedSetting += 1; if (speedSetting > 10) speedSetting = 10; Serial.print("Speed Setting: "); Serial.println(speedSetting); buttonTimer = currentMillis + BUTTON_DELAY; }
-    if (bitRead(NESRegister, DOWN_BUTTON) == 0)   { buttonIndex[3] += 1; speedSetting -= 1; if (speedSetting < 1) speedSetting = 1; Serial.print("Speed Setting: "); Serial.println(speedSetting); buttonTimer = currentMillis + BUTTON_DELAY; }
-    if (bitRead(NESRegister, LEFT_BUTTON) == 0)   { buttonIndex[4] += 1; Serial.print("buttonIndex[4]: "); Serial.println(buttonIndex[4]); buttonTimer = currentMillis + BUTTON_DELAY; }
-    if (bitRead(NESRegister, RIGHT_BUTTON) == 0)  { buttonIndex[5] += 1; Serial.print("buttonIndex[5]: "); Serial.println(buttonIndex[5]); buttonTimer = currentMillis + BUTTON_DELAY; }
+  if (NES_CONTROLLER_ENABLED)
+  {
+    readNesController();
+  
+    if (buttonTimer < currentMillis)
+    {
+      if (bitRead(NESRegister, SELECT_BUTTON) == 0)
+      {
+        lastState = -1;
+        buttonTimer = currentMillis + BUTTON_DELAY;
+        DeiteratePatternIndex();
+      }
+      
+      if (bitRead(NESRegister, START_BUTTON) == 0)
+      {
+        lastState = -1;
+        buttonTimer = currentMillis + BUTTON_DELAY;
+        IteratePatternIndex();
+      }
+
+      if (bitRead(NESRegister, A_BUTTON) == 0)      { buttonIndex[0] += 1; Serial.print("buttonIndex[0]: "); Serial.println(buttonIndex[0]); buttonTimer = currentMillis + BUTTON_DELAY; }
+      if (bitRead(NESRegister, B_BUTTON) == 0)      { buttonIndex[1] += 1; Serial.print("buttonIndex[1]: "); Serial.println(buttonIndex[1]); buttonTimer = currentMillis + BUTTON_DELAY; }
+      if (bitRead(NESRegister, UP_BUTTON) == 0)     { buttonIndex[2] += 1; speedSetting += 1; if (speedSetting > 10) speedSetting = 10; Serial.print("Speed Setting: "); Serial.println(speedSetting); buttonTimer = currentMillis + BUTTON_DELAY; }
+      if (bitRead(NESRegister, DOWN_BUTTON) == 0)   { buttonIndex[3] += 1; speedSetting -= 1; if (speedSetting < 1) speedSetting = 1; Serial.print("Speed Setting: "); Serial.println(speedSetting); buttonTimer = currentMillis + BUTTON_DELAY; }
+      if (bitRead(NESRegister, LEFT_BUTTON) == 0)   { buttonIndex[4] += 1; Serial.print("buttonIndex[4]: "); Serial.println(buttonIndex[4]); buttonTimer = currentMillis + BUTTON_DELAY; }
+      if (bitRead(NESRegister, RIGHT_BUTTON) == 0)  { buttonIndex[5] += 1; Serial.print("buttonIndex[5]: "); Serial.println(buttonIndex[5]); buttonTimer = currentMillis + BUTTON_DELAY; }
+    }
   }
 
   if (patternIndex == 1) PatternSwitch(switchingIndex);
