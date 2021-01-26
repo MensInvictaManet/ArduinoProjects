@@ -1,15 +1,14 @@
 #include <FastLED.h>
-#include <TrueRandom.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 //  LED Strip Primary Settings                                                //
 ////////////////////////////////////////////////////////////////////////////////
 
-#define LED_STRIP_TYPE    WS2812B     //  'WS2811' / 'WS2812' / 'WS2812B'
+#define LED_STRIP_TYPE    WS2811      //  'WS2811' / 'WS2812' / 'WS2812B'
 #define COLOR_PATTERN     GRB         //  'RGB' for some light types, 'GRB' for others
-#define BRIGHTNESS        200         //  The number (0 to 200) for the brightness setting)
-#define NUM_LEDS          8           //  The number of LEDs we want to alter
-#define LED_STRIP_PIN     0           //  The LED strip data pin
+#define BRIGHTNESS        100         //  The number (0 to 200) for the brightness setting)
+#define NUM_LEDS          5           //  The number of LEDs we want to alter
+#define LED_STRIP_PIN     10           //  The LED strip data pin
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -94,7 +93,7 @@ void Pattern_StarField()
     {
         pixelState[i] = 3;
         pixelSettingTime[i] = millis();
-        pixelToColorTime[i] = TrueRandom.random(4000);
+        pixelToColorTime[i] = random(4000);
     }
 
     unsigned long startTime = millis();
@@ -104,11 +103,11 @@ void Pattern_StarField()
         {
             if (pixelState[i] == 0) // Ready to set to a new color
             {
-                pixelTargetColor[i] = CRGB(TrueRandom.random(255), TrueRandom.random(255), TrueRandom.random(255));
+                pixelTargetColor[i] = CRGB(random(255), random(255), random(255));
                 delay(3);
                 pixelState[i] = 1;
                 pixelSettingTime[i] = millis();
-                pixelToColorTime[i] = 1000 + TrueRandom.random(1000); // Time it takes to translate to a new color
+                pixelToColorTime[i] = 1000 + random(1000); // Time it takes to translate to a new color
             }
             else if (pixelState[i] == 1) // Translating to a new color
             {
@@ -128,7 +127,7 @@ void Pattern_StarField()
                 {
                     pixelState[i] = 3;
                     pixelSettingTime[i] = millis();
-                    pixelToColorTime[i] = TrueRandom.random(10000); // Time it takes to choose a new color
+                    pixelToColorTime[i] = random(10000); // Time it takes to choose a new color
                 }
             }
             else if (pixelState[i] == 3)
@@ -159,8 +158,7 @@ void setup()
 void loop()
 {
     //Pattern_PacmanChase(leds, NUM_LEDS);
-    //Pattern_GlowFlow(leds, NUM_LEDS);
+    Pattern_GlowFlow(leds, NUM_LEDS, 25, 3);
     //Pattern_BasicBlink(leds, NUM_LEDS, CRGB::Red);
-    Pattern_StarField();
+    //Pattern_StarField();
 }
-

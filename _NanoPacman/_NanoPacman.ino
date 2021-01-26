@@ -118,35 +118,35 @@ Character Ghosts[4] = { Character(11, 8, 1, 0), Character(11, 8, 1, 0), Characte
 
 const PROGMEM byte LightMap[MAP_W * MAP_H] =
 {
-	239, 240, 241, 242, 243, 245, 246, 247, 248, 249, 250, XXX, XXX,   5,   4,   3,   2,   1,   0,  17,  18,  19,  20,  21,
-	238, XXX, XXX, XXX, 244, XXX, XXX, XXX, XXX, XXX, 251, XXX, XXX,   6, XXX, XXX, XXX, XXX, XXX,  16, XXX, XXX, XXX,  22,
-	237, XXX, XXX, XXX, 229, XXX, XXX, XXX, XXX, XXX, 252, XXX, XXX,   7, XXX, XXX, XXX, XXX, XXX,  15, XXX, XXX, XXX,  23,
-	236, 234, 233, 232, 230, 228, 227, 226, 225, 255, 254, 253,   8,   9,  10,  11,  12,  13,  14,  28,  27,  26,  25,  24,
-	235, XXX, XXX, XXX, 231, XXX, XXX, 224, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX,  55, XXX, XXX,  29, XXX, XXX, XXX,  36,
-	196, XXX, XXX, XXX, 200, XXX, XXX, 223, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX,  54, XXX, XXX,  30, XXX, XXX, XXX,  37,
-	195, 197, 198, 199, 201, XXX, XXX, 222, 221, 220, 219, XXX, XXX,  60,  59,  56,  53, XXX, XXX,  31,  33,  34,  35,  38,
-	XXX, XXX, XXX, XXX, 202, XXX, XXX, XXX, XXX, XXX, 218, XXX, XXX,  61, XXX, XXX, XXX, XXX, XXX,  32, XXX, XXX, XXX, XXX,
-	XXX, XXX, XXX, XXX, 203, XXX, XXX, 213, 214, 215, 216, 217,  63,  62,  58,  57,  52, XXX, XXX,  43, XXX, XXX, XXX, XXX,
-	XXX, XXX, XXX, XXX, 204, XXX, XXX, 212, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX,  51, XXX, XXX,  44, XXX, XXX, XXX, XXX,
-	194, 193, 192, 206, 205, 208, 209, 211, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX,  50,  48,  47,  45,  42,  41,  40,  39,
-	XXX, XXX, XXX, XXX, 207, XXX, XXX, 210, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX,  49, XXX, XXX,  46, XXX, XXX, XXX, XXX,
-	XXX, XXX, XXX, XXX, 163, XXX, XXX, 188, 187, 184, 183, 182,  64,  65,  66,  67,  68, XXX, XXX,  92, XXX, XXX, XXX, XXX,
-	XXX, XXX, XXX, XXX, 164, XXX, XXX, 189, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX,  69, XXX, XXX,  91, XXX, XXX, XXX, XXX,
-	159, 160, 161, 162, 166, 165, 191, 190, 186, 185, 181, XXX, XXX,  74,  73,  72,  71,  70,  89,  90,  93,  94,  95,  96,
-	158, XXX, XXX, XXX, 167, XXX, XXX, XXX, XXX, XXX, 180, XXX, XXX,  75, XXX, XXX, XXX, XXX, XXX,  88, XXX, XXX, XXX,  97,
-	157, XXX, XXX, XXX, 168, XXX, XXX, XXX, XXX, XXX, 179, XXX, XXX,  76, XXX, XXX, XXX, XXX, XXX,  87, XXX, XXX, XXX,  98,
-	156, 155, XXX, XXX, 169, 171, 172, 173, 175, 176, 177, 178,  77,  78,  79,  80,  82,  83,  84,  86, XXX, XXX, 100,  99,
-	XXX, 154, XXX, XXX, 170, XXX, XXX, 174, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX,  81, XXX, XXX,  85, XXX, XXX, 101, XXX,
-	XXX, 153, XXX, XXX, 143, XXX, XXX, 136, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX, 120, XXX, XXX, 112, XXX, XXX, 102, XXX,
-	151, 152, 145, 144, 142, XXX, XXX, 137, 135, 132, 131, XXX, XXX, 123, 122, 121, 119, XXX, XXX, 113, 111, 103, 104, 105,
-	150, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX, 130, XXX, XXX, 124, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX, 106,
-	149, 148, 147, 146, 141, 140, 139, 138, 134, 133, 129, 128, 127, 126, 125, 118, 117, 116, 115, 114, 110, 109, 108, 107
+	 32,  33,  34,  35,  36,  37,  38,  39,  40,  41,  42, XXX, XXX, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120,
+	 31, XXX, XXX, XXX,  19, XXX, XXX, XXX, XXX, XXX,  43, XXX, XXX, 109, XXX, XXX, XXX, XXX, XXX, 100, XXX, XXX, XXX, 121,
+	 30, XXX, XXX, XXX,  18, XXX, XXX, XXX, XXX, XXX,  44, XXX, XXX, 108, XXX, XXX, XXX, XXX, XXX, 101, XXX, XXX, XXX, 122,
+	 29,  28,  14,  15,  20,  16,  17,  50,  49,  48,  47,  46,  45, 107, 106, 105, 104, 103,  95, 102,  99,  98, 123, 124,
+	 27, XXX, XXX, XXX,  21, XXX, XXX,  51, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX,  94, XXX, XXX,  97, XXX, XXX, XXX, 125,
+	 26, XXX, XXX, XXX,  13, XXX, XXX,  52, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX,  93, XXX, XXX,  96, XXX, XXX, XXX, 126,
+	 25,  24,  23,  22,  12, XXX, XXX,  53,  54,  55,  56, XXX, XXX,  89,  90,  91,  92, XXX, XXX, 131, 130, 129, 128, 127,
+	XXX, XXX, XXX, XXX,  11, XXX, XXX, XXX, XXX, XXX,  57, XXX, XXX,  88, XXX, XXX, XXX, XXX, XXX, 132, XXX, XXX, XXX, XXX,
+	XXX, XXX, XXX, XXX,  10, XXX, XXX,  63,  62,  61,  60,  59,  58,  87,  86,  85,  84, XXX, XXX, 133, XXX, XXX, XXX, XXX,
+	XXX, XXX, XXX, XXX,   9, XXX, XXX,  64, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX,  83, XXX, XXX, 134, XXX, XXX, XXX, XXX,
+	  0,   1,   2,   3,   8,   7,   6,  65, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX,  82,  81,  80, 139, 138, 135, 137, 136,
+	XXX, XXX, XXX, XXX,   5, XXX, XXX,  66, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX,  79, XXX, XXX, 140, XXX, XXX, XXX, XXX,
+	XXX, XXX, XXX, XXX,   4, XXX, XXX,  67,  69,  70,  71,  72,  73,  74,  75,  76,  78, XXX, XXX, 141, XXX, XXX, XXX, XXX,
+	XXX, XXX, XXX, XXX, 212, XXX, XXX,  68, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX,  77, XXX, XXX, 142, XXX, XXX, XXX, XXX,
+	216, 215, 214, 213, 211, 208, 207, 206, 205, 204, 203, XXX, XXX, 192, 191, 190, 189, 188, 187, 186, 185, 184, 183, 182,
+	217, XXX, XXX, XXX, 210, XXX, XXX, XXX, XXX, XXX, 202, XXX, XXX, 193, XXX, XXX, XXX, XXX, XXX, 143, XXX, XXX, XXX, 181,
+	218, XXX, XXX, XXX, 209, XXX, XXX, XXX, XXX, XXX, 201, XXX, XXX, 194, XXX, XXX, XXX, XXX, XXX, 144, XXX, XXX, XXX, 180,
+	219, 220, XXX, XXX, 229, 230, 231, 232, 233, 200, 199, 198, 197, 196, 195, 168, 169, 170, 171, 172, XXX, XXX, 178, 179,
+	XXX, 221, XXX, XXX, 228, XXX, XXX, 234, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX, 167, XXX, XXX, 145, XXX, XXX, 177, XXX,
+	XXX, 222, XXX, XXX, 227, XXX, XXX, 235, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX, 166, XXX, XXX, 173, XXX, XXX, 176, XXX,
+	255, 223, 224, 225, 226, XXX, XXX, 236, 237, 238, 239, XXX, XXX, 162, 163, 164, 165, XXX, XXX, 146, 174, 147, 175, 148,
+	254, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX, 240, XXX, XXX, 161, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX, XXX, 149,
+	253, 252, 251, 250, 249, 238, 247, 246, 245, 244, 243, 242, 241, 160, 159, 158, 157, 156, 155, 154, 153, 152, 151, 150
 };
 
 //  Dot Types: 0 (No Dot), 1 (Basic Dot), 2 (Power Pill)
 const PROGMEM byte PillColor[5] = { 60, 255, 128, 0, 128 };
 
-#define DEFAULT_DOT_COUNT 98
+#define DEFAULT_DOT_COUNT 100
 const PROGMEM uint16_t DotPositions[DEFAULT_DOT_COUNT] =
 {
 	0, 2, 4, 6, 8, 10, 13, 15, 17, 19, 21, 23,
@@ -194,7 +194,7 @@ inline bool IsDotStillAtIndex(int dotIndex)                   { return (DotsRema
 inline void ClearDotAtIndex(int dotIndex)                     { DotsRemainingByteFlag[dotIndex / 8] ^= (1 << (dotIndex % 8)); }
 inline void ResetDotIndexMap()                                { for (int i = 0; i < 13; ++i) DotsRemainingByteFlag[i] = 255; }
 
-inline bool IsMapPosition(unsigned char x, unsigned char y) 	{ return ((x == 18 && y == 0) || (pgm_read_byte_near(LightMap + (MAP_W * y) + x) != 0)); }
+inline bool IsMapPosition(unsigned char x, unsigned char y) 	{ return ((x == 0 && y == 10) || (pgm_read_byte_near(LightMap + (MAP_W * y) + x) != 0)); }
 bool CanMove(const Character& c, int x, int y)					      { return (((c.Y == BRIDGE_LEVEL) && ((c.X + x == -1) || c.X + x == MAP_W)) || ((c.X + x >= 0) && (c.X + x < MAP_W) && (c.Y + y >= 0) && (c.Y + y < MAP_H) && (IsMapPosition(c.X + x, c.Y + y)))); }
 inline bool CanContinue(const Character& c)						        { return CanMove(c, c.SpeedX, c.SpeedY); }
 inline bool CanTurn(const Character& c)							          { return (CanMove(c, c.SpeedY, c.SpeedX) || CanMove(c, -c.SpeedY, -c.SpeedX)); }
@@ -972,4 +972,3 @@ void loop()
 		StepForward();
 	}
 }
-
